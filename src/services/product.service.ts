@@ -78,6 +78,25 @@ export const productService = {
     );
   },
 
+  async getProductsByCategory(category: string): Promise<Product[]> {
+    const q = query(
+      collection(db, "products"),
+      where("category", "==", category),
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as Product,
+    );
+  },
+
+  async getTrendingProducts(): Promise<Product[]> {
+    const q = query(collection(db, "products"), where("trending", "==", true));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as Product,
+    );
+  },
+
   async searchProducts(query: string): Promise<Product[]> {
     if (!query.trim()) return [];
     const snapshot = await getDocs(collection(db, "products"));
