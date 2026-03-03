@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/auth.store";
 import AuthStack from "./AuthStack";
 import MainTabs from "./MainTabs";
 import ProductDetailScreen from "@/features/product/ProductDetailScreen";
+import SearchResultsScreen from "@/features/search/SearchResultsScreen";
 import CheckoutScreen from "@/features/checkout/CheckoutScreen";
 import OrderHistoryScreen from "@/features/orders/OrderHistoryScreen";
 import OrderDetailScreen from "@/features/orders/OrderDetailScreen";
@@ -70,6 +71,15 @@ const RootNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: "Sell Product",
+              headerBackTitle: "Back",
+            }}
+          />
+          <Stack.Screen
+            name="SearchResults"
+            component={SearchResultsScreen}
+            options={{
+              headerShown: true,
+              title: "Search Results",
               headerBackTitle: "Back",
             }}
           />
