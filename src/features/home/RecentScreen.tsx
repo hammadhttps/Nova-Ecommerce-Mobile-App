@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { ChevronRight } from "lucide-react-native";
 import { useTheme } from "@/hooks/useTheme";
-import { recentProducts } from "@/services/mocks/products";
+import { productService } from "@/services/product.service";
 import { Product } from "@/types";
 import { formatCurrency } from "@/utils/formatters";
 
@@ -18,8 +19,24 @@ interface RecentScreenProps {
 
 const RecentScreen: React.FC<RecentScreenProps> = React.memo(
   ({ onProductPress }) => {
-    const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark";
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const loadProducts = async () => {
+        try {
+          const recent = await productService.getRecentProducts();
+          setProducts(recent);
+        } catch (error) {
+          console.error("Failed to load recent products:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadProducts();
+    }, []);
 
     const renderItem = ({ item }: { item: Product }) => (
       <TouchableOpacity
@@ -52,10 +69,18 @@ const RecentScreen: React.FC<RecentScreenProps> = React.memo(
       </TouchableOpacity>
     );
 
+    if (loading) {
+      return (
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color="#9333ea" />
+        </View>
+      );
+    }
+
     return (
       <View style={styles.container}>
         <FlatList
-          data={recentProducts}
+          data={products}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
@@ -72,6 +97,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  center: { alignItems: "center", justifyContent: "center" },
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 12,
