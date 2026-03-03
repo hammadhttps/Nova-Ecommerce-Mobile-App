@@ -1,13 +1,14 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
-import { categories } from "@/services/mocks/products";
+import { productService } from "@/services/product.service";
 import { Category } from "@/types";
 
 interface CategoriesTabProps {
@@ -17,8 +18,24 @@ interface CategoriesTabProps {
 export default React.memo(function CategoriesTab({
   onCategoryPress,
 }: CategoriesTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await productService.getCategories();
+        setCategories(cats);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCategories();
+  }, []);
 
   const renderItem = useCallback(
     ({ item }: { item: Category }) => (
@@ -42,12 +59,20 @@ export default React.memo(function CategoriesTab({
         <Text
           style={[styles.subCount, { color: isDark ? "#737373" : "#a3a3a3" }]}
         >
-          {item.subcategories.length} subcategories
+          {item.subcategories?.length || 0} subcategories
         </Text>
       </TouchableOpacity>
     ),
     [isDark, onCategoryPress],
   );
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#9333ea" />
+      </View>
+    );
+  }
 
   return (
     <View
@@ -71,6 +96,7 @@ export default React.memo(function CategoriesTab({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  center: { alignItems: "center", justifyContent: "center" },
   listContent: { padding: 16 },
   grid: { gap: 12 },
   card: {
