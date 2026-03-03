@@ -1,96 +1,103 @@
-import React, { useCallback, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
+import { Trash2, Search } from "lucide-react-native";
 import { useTheme } from "@/hooks/useTheme";
-import { Clock, X } from "lucide-react-native";
-import { Button } from "@/components/common";
-
-const initialRecentSearches = [
-  "Wireless Earbuds",
-  "Running Shoes",
-  "Smart Watch",
-  "Sunglasses",
-  "Laptop Stand",
-  "Desk Lamp",
-];
+import { useAuthStore } from "@/store/auth.store";
+import { searchService, RecentSearch } from "@/services/search.service";
 
 interface RecentSearchTabProps {
-  onSelectSearch: (query: string) => void;
+  onSelectSearch: (term: string) => void;
 }
 
-export default React.memo(function RecentSearchTab({
+export default function RecentSearchTab({
   onSelectSearch,
 }: RecentSearchTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const [searches, setSearches] = useState(initialRecentSearches);
+  const { user } = useAuthStore();
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleClearAll = useCallback(() => {
-    setSearches([]);
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    const loadRecentSearches = async () => {
+      try {
+        const searches = await searchService.getRecentSearches(user.id);
+        setRecentSearches(searches);
+      } catch (error) {
+        console.error("Failed to load recent searches:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRecentSearches();
+  }, [user?.id]);
+
+  const handleClearAll = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      await searchService.clearRecentSearches(user.id);
+      setRecentSearches([]);
+    } catch (error) {
+      console.error("Failed to clear recent searches:", error);
+    }
+  }, [user?.id]);
+
+  const handleRemoveItem = useCallback(async (searchId: string) => {
+    try {
+      await searchService.removeRecentSearch(searchId);
+      setRecentSearches((prev) => prev.filter((item) => item.id !== searchId));
+    } catch (error) {
+      console.error("Failed to remove recent search:", error);
+    }
   }, []);
 
-  const handleRemove = useCallback((index: number) => {
-    setSearches((prev) => prev.filter((_, i) => i !== index));
-  }, []);
-
-  const renderItem = useCallback(
-    ({ item, index }: { item: string; index: number }) => (
-      <TouchableOpacity
-        style={[
-          styles.item,
-          index < searches.length - 1 && {
-            borderBottomWidth: StyleSheet.hairlineWidth,
-            borderBottomColor: isDark ? "#333333" : "#f0f0f0",
-          },
-        ]}
-        onPress={() => onSelectSearch(item)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.row}>
-          <Clock size={18} color={isDark ? "#a3a3a3" : "#737373"} />
-          <Text
-            style={[styles.label, { color: isDark ? "#fafafa" : "#030213" }]}
-            numberOfLines={1}
-          >
-            {item}
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={styles.removeBtn}
-          onPress={() => handleRemove(index)}
-          activeOpacity={0.6}
-        >
-          <X size={16} color={isDark ? "#525252" : "#d4d4d4"} />
-        </TouchableOpacity>
-      </TouchableOpacity>
-    ),
-    [isDark, onSelectSearch, handleRemove, searches.length],
+  const handleSelectSearch = useCallback(
+    (term: string) => {
+      onSelectSearch(term);
+    },
+    [onSelectSearch],
   );
 
-  if (searches.length === 0) {
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.center,
+          { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
+        ]}
+      >
+        <ActivityIndicator size="small" color="#9333ea" />
+      </View>
+    );
+  }
+
+  if (!user?.id) {
     return (
       <View
         style={[
           styles.container,
+          styles.center,
           { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
         ]}
       >
-        <View style={styles.empty}>
-          <Clock size={48} color={isDark ? "#525252" : "#d4d4d4"} />
-          <Text
-            style={[
-              styles.emptyText,
-              { color: isDark ? "#a3a3a3" : "#737373" },
-            ]}
-          >
-            No recent searches
-          </Text>
-        </View>
+        <Text
+          style={[styles.emptyText, { color: isDark ? "#a3a3a3" : "#737373" }]}
+        >
+          Login to save and view recent searches
+        </Text>
       </View>
     );
   }
@@ -102,45 +109,89 @@ export default React.memo(function RecentSearchTab({
         { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
       ]}
     >
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: isDark ? "#fafafa" : "#030213" }]}>
-          Recent Searches
-        </Text>
-        <Button onPress={handleClearAll} variant="ghost" size="sm">
-          Clear All
-        </Button>
-      </View>
+      {recentSearches.length > 0 && (
+        <View style={styles.header}>
+          <Text
+            style={[styles.title, { color: isDark ? "#fafafa" : "#030213" }]}
+          >
+            Recent Searches
+          </Text>
+          <TouchableOpacity onPress={handleClearAll} activeOpacity={0.7}>
+            <Text style={styles.clearAll}>Clear All</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <FlatList
-        data={searches}
-        renderItem={renderItem}
-        keyExtractor={(item) => item}
+        data={recentSearches}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.searchItem,
+              { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+            ]}
+            onPress={() => handleSelectSearch(item.term)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.left}>
+              <Search size={18} color={isDark ? "#737373" : "#a3a3a3"} />
+              <Text
+                style={[styles.term, { color: isDark ? "#fafafa" : "#030213" }]}
+                numberOfLines={1}
+              >
+                {item.term}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => handleRemoveItem(item.id)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Trash2 size={16} color={isDark ? "#737373" : "#a3a3a3"} />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.center}>
+            <Text
+              style={[
+                styles.emptyText,
+                { color: isDark ? "#a3a3a3" : "#737373" },
+              ]}
+            >
+              No recent searches yet
+            </Text>
+          </View>
+        }
       />
     </View>
   );
-});
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  center: { alignItems: "center", justifyContent: "center", padding: 20 },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  title: { fontSize: 16, fontWeight: "700" },
-  listContent: { paddingHorizontal: 20, paddingBottom: 16 },
-  item: {
+  title: { fontSize: 18, fontWeight: "600" },
+  clearAll: { color: "#9333ea", fontSize: 14, fontWeight: "500" },
+  listContent: { paddingHorizontal: 16, paddingTop: 8, flexGrow: 1 },
+  searchItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 14,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 8,
   },
-  row: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
-  label: { fontSize: 15 },
-  removeBtn: { padding: 4 },
-  empty: { flex: 1, alignItems: "center", justifyContent: "center" },
-  emptyText: { fontSize: 16, marginTop: 12 },
+  left: { flexDirection: "row", alignItems: "center", flex: 1, gap: 12 },
+  term: { fontSize: 15, flex: 1 },
+  emptyText: { fontSize: 15 },
 });
