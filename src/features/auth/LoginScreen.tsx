@@ -9,7 +9,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Button } from "@/components/common";
 import { useAuthStore } from "@/store/auth.store";
 import { validateEmail } from "@/utils/validators";
@@ -20,8 +20,9 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const insets = useSafeAreaInsets();
   const { login, resetPassword, isLoading, error } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,7 +77,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const screenBg = isDark ? "#0f0f0f" : "#ffffff";
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: screenBg }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: screenBg,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -154,7 +166,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -181,16 +193,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   form: {
-    marginBottom: 24,
-  },
-  errorText: {
-    color: "#d4183d",
-    fontSize: 14,
-    marginBottom: 12,
+    gap: 16,
   },
   forgotPassword: {
     alignSelf: "flex-end",
-    marginBottom: 24,
+    marginBottom: 8,
   },
   forgotPasswordText: {
     color: "#9333ea",
@@ -198,12 +205,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   button: {
-    marginBottom: 16,
+    marginTop: 8,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 16,
+    marginTop: 32,
   },
   footerText: {
     fontSize: 14,
@@ -212,6 +219,11 @@ const styles = StyleSheet.create({
     color: "#9333ea",
     fontSize: 14,
     fontWeight: "600",
+  },
+  errorText: {
+    color: "#ef4444",
+    fontSize: 14,
+    marginTop: 8,
   },
 });
 
