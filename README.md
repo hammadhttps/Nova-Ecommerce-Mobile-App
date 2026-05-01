@@ -19,7 +19,7 @@ A fully-featured e-commerce mobile application built with React Native (Expo) an
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | React Native (Expo SDK 54) |
+| Framework | React Native (Expo SDK 51) |
 | Language | TypeScript |
 | Navigation | React Navigation v7 (Stack + Bottom Tabs) |
 | State Management | Zustand |
@@ -117,6 +117,7 @@ npx expo start
 npm run android    # Android
 npm run ios        # iOS
 npm run web        # Web (limited support)
+npm run typecheck  # TypeScript check
 ```
 
 ### Testing on Device
