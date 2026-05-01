@@ -1,6 +1,7 @@
 import { CartItem, Product } from '@/types';
 import { initialCartItems } from '@/services/mocks/cart';
 import { delay } from '@/utils/delay';
+import { PROMO_CODE, PROMO_DISCOUNT } from '@/utils/constants';
 
 let cartState: CartItem[] = [...initialCartItems];
 
@@ -55,8 +56,8 @@ export const cartService = {
   },
 
   applyPromoCode(code: string): { valid: boolean; discount: number; message: string } {
-    if (code === 'NOVA20') {
-      return { valid: true, discount: 0.2, message: '20% discount applied!' };
+    if (code.trim().toUpperCase() === PROMO_CODE) {
+      return { valid: true, discount: PROMO_DISCOUNT, message: '20% discount applied!' };
     }
     return { valid: false, discount: 0, message: 'Invalid promo code' };
   },
