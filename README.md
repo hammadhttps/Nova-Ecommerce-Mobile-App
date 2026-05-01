@@ -176,6 +176,15 @@ RootNavigator (Stack)
 
 Use **NOVA20** at checkout for a 20% discount.
 
+## Quick Health Check
+
+Run this before starting feature work:
+
+```bash
+npm install
+npm run typecheck
+```
+
 ## Future Enhancements
 
 - [ ] Firebase Auth integration
