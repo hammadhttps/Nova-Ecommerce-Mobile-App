@@ -1,4 +1,5 @@
 import { useComparisonStore } from '@/store/comparison.store';
+import { MAX_COMPARISON_PRODUCTS } from '@/utils/constants';
 
 export const useComparison = () => {
   const comparisonMode = useComparisonStore((state) => state.comparisonMode);
@@ -14,7 +15,7 @@ export const useComparison = () => {
     comparisonMode,
     selectedProducts,
     showComparison,
-    canAddMore: selectedProducts.length < 3,
+    canAddMore: selectedProducts.length < MAX_COMPARISON_PRODUCTS,
     toggleComparisonMode,
     addToComparison,
     removeFromComparison,
