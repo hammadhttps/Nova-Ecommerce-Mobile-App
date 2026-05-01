@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Product } from '@/types';
+import { MAX_COMPARISON_PRODUCTS } from '@/utils/constants';
 
 interface ComparisonState {
   comparisonMode: boolean;
@@ -12,8 +13,6 @@ interface ComparisonState {
   clearComparison: () => void;
   toggleShowComparison: () => void;
 }
-
-const MAX_COMPARISON_PRODUCTS = 3;
 
 export const useComparisonStore = create<ComparisonState>((set) => ({
   comparisonMode: false,
