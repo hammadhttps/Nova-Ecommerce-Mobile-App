@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { CartItem, Product } from '@/types';
 import { cartService } from '@/services/cart.service';
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from '@/utils/constants';
 
 interface CartState {
   items: CartItem[];
@@ -78,7 +79,7 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   getShipping: () => {
     const subtotal = get().getSubtotal();
-    return subtotal > 50 ? 0 : 4.99;
+    return subtotal > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   },
 
   getTotal: () => {
