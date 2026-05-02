@@ -2,6 +2,11 @@ import { create } from 'zustand';
 import { User } from '@/types';
 import { authService, LoginCredentials, SignupCredentials } from '@/services/auth.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from '@/utils/constants';
+
+const getErrorMessage = (error: unknown): string => {
+  return error instanceof Error ? error.message : 'Something went wrong';
+};
 
 interface AuthState {
   user: User | null;
@@ -27,8 +32,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initializeAuth: async () => {
     try {
-      const token = await AsyncStorage.getItem('auth_token');
-      const userStr = await AsyncStorage.getItem('auth_user');
+      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      const userStr = await AsyncStorage.getItem(AUTH_USER_KEY);
       if (token && userStr) {
         set({
           token,
@@ -45,11 +50,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const { user, token } = await authService.login(credentials);
-      await AsyncStorage.setItem('auth_token', token);
-      await AsyncStorage.setItem('auth_user', JSON.stringify(user));
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
       set({ user, token, isAuthenticated: true, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error), isLoading: false });
       throw error;
     }
   },
@@ -58,11 +63,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const { user, token } = await authService.signup(credentials);
-      await AsyncStorage.setItem('auth_token', token);
-      await AsyncStorage.setItem('auth_user', JSON.stringify(user));
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
       set({ user, token, isAuthenticated: true, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error), isLoading: false });
       throw error;
     }
   },
@@ -71,11 +76,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const { user, token } = await authService.loginWithGoogle();
-      await AsyncStorage.setItem('auth_token', token);
-      await AsyncStorage.setItem('auth_user', JSON.stringify(user));
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
       set({ user, token, isAuthenticated: true, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error), isLoading: false });
       throw error;
     }
   },
@@ -84,11 +89,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       await authService.logout();
-      await AsyncStorage.removeItem('auth_token');
-      await AsyncStorage.removeItem('auth_user');
+      await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+      await AsyncStorage.removeItem(AUTH_USER_KEY);
       set({ user: null, token: null, isAuthenticated: false, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error), isLoading: false });
     }
   },
 

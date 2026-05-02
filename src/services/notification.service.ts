@@ -1,16 +1,17 @@
 import { Notification } from '@/types';
 import { mockNotifications } from '@/services/mocks/notifications';
+import { delay } from '@/utils/delay';
 
 let notificationsState: Notification[] = [...mockNotifications];
 
 export const notificationService = {
   async getNotifications(): Promise<Notification[]> {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await delay(300);
     return notificationsState;
   },
 
   async markAsRead(id: number): Promise<Notification[]> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await delay(200);
     notificationsState = notificationsState.map((n) =>
       n.id === id ? { ...n, read: true } : n
     );
@@ -18,13 +19,13 @@ export const notificationService = {
   },
 
   async markAllAsRead(): Promise<Notification[]> {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await delay(300);
     notificationsState = notificationsState.map((n) => ({ ...n, read: true }));
     return notificationsState;
   },
 
   async deleteNotification(id: number): Promise<Notification[]> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await delay(200);
     notificationsState = notificationsState.filter((n) => n.id !== id);
     return notificationsState;
   },

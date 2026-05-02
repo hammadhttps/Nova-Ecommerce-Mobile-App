@@ -19,8 +19,12 @@ export const useWishlistStore = create<WishlistState>((set) => ({
 
   fetchWishlist: async () => {
     set({ isLoading: true });
-    const items = await wishlistService.getWishlistItems();
-    set({ items, isLoading: false });
+    try {
+      const items = await wishlistService.getWishlistItems();
+      set({ items });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   addToWishlist: async (product: Product) => {
