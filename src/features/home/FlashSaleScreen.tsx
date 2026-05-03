@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { Clock } from "lucide-react-native";
 import { useTheme } from "@/hooks/useTheme";
-import { flashSaleProducts } from "@/services/mocks/products";
+import { productService } from "@/services/product.service";
 import { Product } from "@/types";
 import { formatCurrency } from "@/utils/formatters";
 
@@ -18,7 +19,25 @@ interface FlashSaleScreenProps {
 
 const FlashSaleScreen: React.FC<FlashSaleScreenProps> = React.memo(
   ({ onProductPress }) => {
-    const { isDark } = useTheme();
+    const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      loadFlashSaleProducts();
+    }, []);
+
+    const loadFlashSaleProducts = async () => {
+      try {
+        const data = await productService.getFlashSaleProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error loading flash sale products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     const renderFlashSaleItem = ({ item }: { item: Product }) => (
       <TouchableOpacity
@@ -30,12 +49,20 @@ const FlashSaleScreen: React.FC<FlashSaleScreenProps> = React.memo(
         activeOpacity={0.7}
       >
         <View style={styles.flashSaleImageContainer}>
-          <View
-            style={[
-              styles.flashSaleImage,
-              { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
-            ]}
-          />
+          {item.image ? (
+            <Image
+              source={{ uri: item.image }}
+              style={styles.flashSaleImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={[
+                styles.flashSaleImage,
+                { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
+              ]}
+            />
+          )}
         </View>
         <Text
           style={[
@@ -56,47 +83,56 @@ const FlashSaleScreen: React.FC<FlashSaleScreenProps> = React.memo(
       </TouchableOpacity>
     );
 
+    if (loading) {
+      return (
+        <View style={styles.container}>
+          <Text style={{ color: isDark ? "#fafafa" : "#030213" }}>
+            Loading...
+          </Text>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.container}>
         <FlatList
-          data={flashSaleProducts}
+          data={products}
           renderItem={renderFlashSaleItem}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={{ color: isDark ? "#737373" : "#a3a3a3" }}>
+              No flash sale products available
+            </Text>
+          }
         />
       </View>
     );
   },
 );
 
-FlashSaleScreen.displayName = "FlashSaleScreen";
+export default FlashSaleScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    paddingVertical: 16,
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingTop: 12,
     gap: 12,
   },
   flashSaleCard: {
-    width: 160,
+    width: 140,
     marginRight: 12,
-    borderRadius: 16,
-    padding: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: 12,
+    padding: 8,
   },
   flashSaleImageContainer: {
     width: "100%",
-    aspectRatio: 1,
-    borderRadius: 12,
+    height: 100,
+    borderRadius: 8,
     overflow: "hidden",
     marginBottom: 8,
   },
@@ -113,18 +149,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#9333ea",
-    marginBottom: 4,
   },
   timeLeftContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    marginTop: 4,
   },
   timeLeftText: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#d4183d",
     fontWeight: "500",
   },
 });
-
-export default FlashSaleScreen;
