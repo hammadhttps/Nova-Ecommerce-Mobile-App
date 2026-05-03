@@ -1,14 +1,24 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "@/hooks/useTheme";
 import { Avatar } from "@/components/common";
 import { useAuthStore } from "@/store/auth.store";
-import { Plus } from "lucide-react-native";
+import { authService } from "@/services/auth.service";
+import { Plus, Package, Camera } from "lucide-react-native";
 
 export default React.memo(function OverviewTab({ navigation }: any) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // TODO: Fetch real stats from Firestore
   const stats = [
@@ -16,6 +26,31 @@ export default React.memo(function OverviewTab({ navigation }: any) {
     { label: "Wishlist", value: 0 },
     { label: "Reviews", value: 0 },
   ];
+
+  const handlePhotoUpload = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    setUploadingPhoto(true);
+    try {
+      const photoURL = await authService.updateProfilePhoto(
+        result.assets[0].uri,
+      );
+      if (user) {
+        updateUser({ ...user, avatar: photoURL });
+      }
+    } catch {
+      Alert.alert("Error", "Failed to upload profile photo");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -32,7 +67,23 @@ export default React.memo(function OverviewTab({ navigation }: any) {
           { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
         ]}
       >
-        <Avatar size={72} name={user.name} uri={user.avatar} />
+        <TouchableOpacity onPress={handlePhotoUpload} disabled={uploadingPhoto}>
+          {uploadingPhoto ? (
+            <View
+              style={[
+                styles.avatarLoader,
+                { backgroundColor: isDark ? "#262626" : "#f0f0f0" },
+              ]}
+            >
+              <ActivityIndicator size="large" color="#9333ea" />
+            </View>
+          ) : (
+            <Avatar size={72} name={user.name} uri={user.avatar} />
+          )}
+          <View style={styles.cameraBadge}>
+            <Camera size={16} color="#fff" />
+          </View>
+        </TouchableOpacity>
         <Text style={[styles.name, { color: isDark ? "#fafafa" : "#030213" }]}>
           {user.name}
         </Text>
@@ -68,6 +119,16 @@ export default React.memo(function OverviewTab({ navigation }: any) {
           <Plus size={20} color="#fff" />
           <Text style={styles.sellButtonText}>Sell Product</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.myProductsButton,
+            { borderColor: isDark ? "#404040" : "#e5e5e5" },
+          ]}
+          onPress={() => navigation.navigate("MyProducts")}
+        >
+          <Package size={20} color="#9333ea" />
+          <Text style={styles.myProductsText}>My Products</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -85,6 +146,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  avatarLoader: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cameraBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#9333ea",
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
   },
   name: { fontSize: 22, fontWeight: "700", marginTop: 12 },
   email: { fontSize: 14, marginTop: 4 },
@@ -108,6 +189,23 @@ const styles = StyleSheet.create({
   },
   sellButtonText: {
     color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  myProductsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 12,
+    width: "100%",
+  },
+  myProductsText: {
+    color: "#9333ea",
     fontSize: 16,
     fontWeight: "600",
   },
