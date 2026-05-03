@@ -15,7 +15,8 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   borderRadius = 8,
   style,
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

@@ -1,6 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Button } from "./Button";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 interface Props {
   children: ReactNode;
@@ -33,13 +32,13 @@ export class ErrorBoundary extends Component<Props, State> {
           <Text style={styles.message}>
             {this.state.error?.message || "An unexpected error occurred"}
           </Text>
-          <Button
-            variant="primary"
-            onPress={() => this.setState({ hasError: false, error: null })}
+          <TouchableOpacity
             style={styles.button}
+            onPress={() => this.setState({ hasError: false, error: null })}
+            activeOpacity={0.7}
           >
-            Try Again
-          </Button>
+            <Text style={styles.buttonText}>Try Again</Text>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -71,5 +70,16 @@ const styles = StyleSheet.create({
   },
   button: {
     minWidth: 200,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: "#030213",
+    borderRadius: 8,
+    justifyContent: "center" as const,
+    alignItems: "center" as const,
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
