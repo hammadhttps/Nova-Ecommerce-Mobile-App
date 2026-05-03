@@ -7,21 +7,17 @@ import { RootStackParamList } from "@/navigation/types";
 import { Product } from "@/types";
 
 const HomeFeedScreen: React.FC = React.memo(function HomeFeedScreen() {
-  const navigation =
-    useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const onProductPress = useCallback(
     (product: Product) => {
-      navigation.navigate("ProductDetail", { id: product.id });
+      navigation.navigate("ProductDetail", { id: String(product.id) });
     },
     [navigation],
   );
 
   return (
-    <SafeAreaView
-      style={{ flex: 1 }}
-      edges={["left", "right", "bottom"]}
-    >
+    <SafeAreaView style={{ flex: 1 }} edges={["left", "right", "bottom"]}>
       <ForYouScreen onProductPress={onProductPress} />
     </SafeAreaView>
   );

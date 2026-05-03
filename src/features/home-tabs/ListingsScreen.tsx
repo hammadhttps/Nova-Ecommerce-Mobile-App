@@ -10,13 +10,13 @@ import { allProducts } from "@/services/mocks/products";
 import { Product } from "@/types";
 
 const ListingsScreen: React.FC = React.memo(function ListingsScreen() {
-  const { isDark } = useTheme();
-  const navigation =
-    useNavigation<NavigationProp<RootStackParamList>>();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const onProductPress = useCallback(
     (product: Product) => {
-      navigation.navigate("ProductDetail", { id: product.id });
+      navigation.navigate("ProductDetail", { id: String(product.id) });
     },
     [navigation],
   );
