@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,66 +6,15 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuthStore } from "@/store/auth.store";
+import { orderService } from "@/services/order.service";
 import { Badge } from "@/components/common";
 import { ChevronRight } from "lucide-react-native";
 import { Order } from "@/types";
-
-const mockOrders: Order[] = [
-  {
-    id: "ORD-001",
-    date: "2024-01-15",
-    status: "delivered",
-    total: 109.98,
-    items: [
-      {
-        name: "Wireless Earbuds Pro",
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1590658268037-6bf12f032f53?w=100",
-        price: 29.99,
-      },
-      {
-        name: "Smart Watch Ultra",
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1546868871-af0de0ae72be?w=100",
-        price: 89.99,
-      },
-    ],
-  },
-  {
-    id: "ORD-002",
-    date: "2024-01-20",
-    status: "in_transit",
-    total: 79.99,
-    items: [
-      {
-        name: "Running Shoes Elite",
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100",
-        price: 79.99,
-      },
-    ],
-  },
-  {
-    id: "ORD-003",
-    date: "2024-02-01",
-    status: "processing",
-    total: 45.99,
-    items: [
-      {
-        name: "Minimalist Backpack",
-        quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100",
-        price: 45.99,
-      },
-    ],
-  },
-];
 
 const statusConfig = {
   delivered: { label: "Delivered", variant: "success" as const },
@@ -79,8 +28,34 @@ interface OrdersTabProps {
 }
 
 export default React.memo(function OrdersTab({ onPress }: OrdersTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const { user } = useAuthStore();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchOrders = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await orderService.getOrdersByStatus(user.id, "all");
+      setOrders(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchOrders();
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Order }) => {
@@ -109,6 +84,11 @@ export default React.memo(function OrdersTab({ onPress }: OrdersTabProps) {
             {item.items.slice(0, 3).map((i, idx) => (
               <Image key={idx} source={{ uri: i.image }} style={styles.thumb} />
             ))}
+            {item.items.length > 3 && (
+              <View style={styles.moreBadge}>
+                <Text style={styles.moreText}>+{item.items.length - 3}</Text>
+              </View>
+            )}
           </View>
           <View style={styles.cardFooter}>
             <Text
@@ -134,6 +114,20 @@ export default React.memo(function OrdersTab({ onPress }: OrdersTabProps) {
     [isDark, onPress],
   );
 
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.center,
+          { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#9333ea" />
+      </View>
+    );
+  }
+
   return (
     <View
       style={[
@@ -142,11 +136,37 @@ export default React.memo(function OrdersTab({ onPress }: OrdersTabProps) {
       ]}
     >
       <FlatList
-        data={mockOrders}
+        data={orders}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text
+              style={[
+                styles.emptyTitle,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+            >
+              No Orders Yet
+            </Text>
+            <Text
+              style={[
+                styles.emptySub,
+                { color: isDark ? "#737373" : "#a3a3a3" },
+              ]}
+            >
+              Your order history will appear here
+            </Text>
+          </View>
+        }
       />
     </View>
   );
@@ -154,6 +174,7 @@ export default React.memo(function OrdersTab({ onPress }: OrdersTabProps) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  center: { justifyContent: "center", alignItems: "center" },
   listContent: { padding: 16 },
   card: {
     borderRadius: 12,
@@ -174,6 +195,15 @@ const styles = StyleSheet.create({
   orderId: { fontSize: 14, fontWeight: "700" },
   itemsRow: { flexDirection: "row", gap: 8, marginBottom: 10 },
   thumb: { width: 40, height: 40, borderRadius: 8 },
+  moreBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  moreText: { fontSize: 12, fontWeight: "600", color: "#9333ea" },
   cardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -182,4 +212,7 @@ const styles = StyleSheet.create({
   date: { fontSize: 12 },
   right: { flexDirection: "row", alignItems: "center", gap: 6 },
   total: { fontSize: 14, fontWeight: "600" },
+  emptyState: { alignItems: "center", paddingTop: 60 },
+  emptyTitle: { fontSize: 18, fontWeight: "700" },
+  emptySub: { fontSize: 14, marginTop: 4 },
 });

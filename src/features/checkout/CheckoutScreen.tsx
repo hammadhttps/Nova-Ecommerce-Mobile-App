@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeScreen } from "@/components/layout/SafeScreen";
@@ -28,20 +29,32 @@ const { width } = Dimensions.get("window");
 
 export default function CheckoutScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { items, subtotal, shipping, total, clearCart } = useCart();
   const { user } = useAuthStore();
   const [step, setStep] = useState(0);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState("1");
+  const [selectedAddress, setSelectedAddress] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("1");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
 
   // Fetch addresses from Firestore
-  React.useEffect(() => {
+  useEffect(() => {
     if (user?.id) {
-      addressService.getAddresses(user.id).then((addrs) => setAddresses(addrs));
+      setLoadingAddresses(true);
+      addressService
+        .getAddresses(user.id)
+        .then((addrs) => {
+          setAddresses(addrs);
+          const defaultAddr = addrs.find((a) => a.isDefault) || addrs[0];
+          if (defaultAddr) setSelectedAddress(defaultAddr.id);
+        })
+        .finally(() => setLoadingAddresses(false));
+    } else {
+      setLoadingAddresses(false);
     }
   }, [user?.id]);
 
@@ -60,15 +73,26 @@ export default function CheckoutScreen({ navigation }: Props) {
     };
 
     await orderService.createOrder(user.id, checkoutData);
-    setShowConfetti(true);
     clearCart();
+    setOrderPlaced(true);
+    setTimeout(() => setShowConfetti(true), 100);
     setTimeout(() => {
       navigation.navigate("OrderHistory");
-    }, 2000);
+    }, 2500);
   };
 
   const address = addresses.find((a) => a.id === selectedAddress);
   const payment = mockPaymentMethods.find((m) => m.id === selectedPayment);
+
+  if (loadingAddresses) {
+    return (
+      <SafeScreen>
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color="#9333ea" />
+        </View>
+      </SafeScreen>
+    );
+  }
 
   const renderStepIndicator = () => (
     <View style={styles.steps}>
@@ -116,6 +140,12 @@ export default function CheckoutScreen({ navigation }: Props) {
       >
         Select Address
       </Text>
+      <TouchableOpacity
+        style={styles.manageLink}
+        onPress={() => navigation.navigate("AddressManagement")}
+      >
+        <Text style={styles.manageLinkText}>+ Manage Addresses</Text>
+      </TouchableOpacity>
       {addresses.map((a) => (
         <TouchableOpacity
           key={a.id}
@@ -403,12 +433,42 @@ export default function CheckoutScreen({ navigation }: Props) {
             </Button>
           )}
         </View>
-        {showConfetti && (
-          <ConfettiCannon
-            count={200}
-            origin={{ x: width / 2, y: 0 }}
-            fadeOut={true}
-          />
+        {orderPlaced && (
+          <View style={styles.successOverlay}>
+            {showConfetti && (
+              <ConfettiCannon
+                count={200}
+                origin={{ x: width / 2, y: 0 }}
+                fadeOut={true}
+              />
+            )}
+            <View
+              style={[
+                styles.successCard,
+                { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+              ]}
+            >
+              <View style={styles.successIcon}>
+                <Check size={40} color="#ffffff" />
+              </View>
+              <Text
+                style={[
+                  styles.successTitle,
+                  { color: isDark ? "#fafafa" : "#030213" },
+                ]}
+              >
+                Order Placed Successfully!
+              </Text>
+              <Text
+                style={[
+                  styles.successSub,
+                  { color: isDark ? "#a3a3a3" : "#737373" },
+                ]}
+              >
+                Your order has been confirmed and is being processed.
+              </Text>
+            </View>
+          </View>
         )}
       </View>
     </SafeScreen>
@@ -417,6 +477,44 @@ export default function CheckoutScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  center: { justifyContent: "center", alignItems: "center" },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 100,
+  },
+  successCard: {
+    borderRadius: 20,
+    padding: 32,
+    alignItems: "center",
+    marginHorizontal: 40,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+  },
+  successIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "#22c55e",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  successSub: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -450,7 +548,9 @@ const styles = StyleSheet.create({
     height: 2,
   },
   content: { paddingHorizontal: 20, paddingTop: 4 },
-  sectionTitle: { fontSize: 20, fontWeight: "700", marginBottom: 16 },
+  sectionTitle: { fontSize: 20, fontWeight: "700", marginBottom: 8 },
+  manageLink: { marginBottom: 12 },
+  manageLinkText: { color: "#9333ea", fontSize: 14, fontWeight: "600" },
   optionCard: {
     flexDirection: "row",
     alignItems: "center",
