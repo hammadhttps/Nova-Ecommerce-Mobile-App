@@ -14,7 +14,7 @@ import { X } from "lucide-react-native";
 import { WishlistItem } from "@/types";
 
 interface WishlistItemsTabProps {
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void;
   onProductPress: (item: WishlistItem) => void;
 }
 
@@ -22,7 +22,8 @@ export default React.memo(function WishlistItemsTab({
   onRemove,
   onProductPress,
 }: WishlistItemsTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { wishlistItems } = useWishlist();
 
   const renderItem = useCallback(

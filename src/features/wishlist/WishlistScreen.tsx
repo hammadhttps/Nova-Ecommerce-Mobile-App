@@ -19,19 +19,20 @@ const routes: TabRoute[] = [
 ];
 
 export default function WishlistScreen({ navigation }: { navigation: any }) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { wishlistItems, removeFromWishlist, wishlistLoading } = useWishlist();
   const { addToCart } = useCart();
 
   const handleProductPress = useCallback(
     (item: WishlistItem | Product) => {
-      navigation.navigate("ProductDetail", { id: item.id });
+      navigation.navigate("ProductDetail", { id: String(item.id) });
     },
     [navigation],
   );
 
   const handleRemove = useCallback(
-    (id: number) => {
+    (id: string) => {
       removeFromWishlist(id);
     },
     [removeFromWishlist],
