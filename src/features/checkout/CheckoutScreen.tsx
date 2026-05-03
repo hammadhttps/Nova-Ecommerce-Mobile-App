@@ -7,6 +7,7 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
@@ -15,22 +16,50 @@ import ConfettiCannon from "react-native-confetti-cannon";
 import { ChevronLeft, Check, MapPin, CreditCard } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
-import { mockAddresses } from "@/services/mocks/addresses";
+import { Address } from "@/types";
+import { addressService } from "@/services/address.service";
 import { mockPaymentMethods } from "@/services/mocks/payments";
+import { orderService, CheckoutData } from "@/services/order.service";
+import { useAuthStore } from "@/store/auth.store";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Checkout">;
 
 const { width } = Dimensions.get("window");
 
 export default function CheckoutScreen({ navigation }: Props) {
-  const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { items, subtotal, shipping, total, clearCart } = useCart();
+  const { user } = useAuthStore();
   const [step, setStep] = useState(0);
-  const [selectedAddress, setSelectedAddress] = useState(1);
-  const [selectedPayment, setSelectedPayment] = useState(1);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState("1");
+  const [selectedPayment, setSelectedPayment] = useState("1");
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const handlePlaceOrder = () => {
+  // Fetch addresses from Firestore
+  React.useEffect(() => {
+    if (user?.id) {
+      addressService.getAddresses(user.id).then((addrs) => setAddresses(addrs));
+    }
+  }, [user?.id]);
+
+  const handlePlaceOrder = async () => {
+    if (!user?.id) return;
+
+    const address = addresses.find((a) => a.id === selectedAddress);
+    const payment = mockPaymentMethods.find((m) => m.id === selectedPayment);
+
+    if (!address || !payment) return;
+
+    const checkoutData: CheckoutData = {
+      items,
+      address,
+      paymentMethod: payment,
+    };
+
+    await orderService.createOrder(user.id, checkoutData);
     setShowConfetti(true);
     clearCart();
     setTimeout(() => {
@@ -38,7 +67,7 @@ export default function CheckoutScreen({ navigation }: Props) {
     }, 2000);
   };
 
-  const address = mockAddresses.find((a) => a.id === selectedAddress);
+  const address = addresses.find((a) => a.id === selectedAddress);
   const payment = mockPaymentMethods.find((m) => m.id === selectedPayment);
 
   const renderStepIndicator = () => (
@@ -87,7 +116,7 @@ export default function CheckoutScreen({ navigation }: Props) {
       >
         Select Address
       </Text>
-      {mockAddresses.map((a) => (
+      {addresses.map((a) => (
         <TouchableOpacity
           key={a.id}
           style={[
@@ -298,7 +327,13 @@ export default function CheckoutScreen({ navigation }: Props) {
               {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
             </Text>
           </View>
-          <View style={[styles.summaryRow, styles.totalRow]}>
+          <View
+            style={[
+              styles.summaryRow,
+              styles.totalRow,
+              { borderTopColor: isDark ? "#404040" : "#e5e5e5" },
+            ]}
+          >
             <Text
               style={[
                 styles.totalLabel,
@@ -339,7 +374,12 @@ export default function CheckoutScreen({ navigation }: Props) {
           <View style={{ width: 24 }} />
         </View>
         {renderStepIndicator()}
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: 24 + insets.bottom },
+          ]}
+        >
           {step === 0 && renderAddressStep()}
           {step === 1 && renderPaymentStep()}
           {step === 2 && renderReviewStep()}
@@ -347,7 +387,10 @@ export default function CheckoutScreen({ navigation }: Props) {
         <View
           style={[
             styles.footer,
-            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+            {
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+              paddingBottom: Math.max(20, insets.bottom),
+            },
           ]}
         >
           {step < 2 ? (
@@ -406,7 +449,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 2,
   },
-  content: { paddingHorizontal: 20, paddingBottom: 20 },
+  content: { paddingHorizontal: 20, paddingTop: 4 },
   sectionTitle: { fontSize: 20, fontWeight: "700", marginBottom: 16 },
   optionCard: {
     flexDirection: "row",
@@ -451,14 +494,14 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 14, fontWeight: "600" },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
     paddingTop: 12,
     marginTop: 8,
   },
   totalLabel: { fontSize: 16, fontWeight: "700" },
   totalValue: { fontSize: 18, fontWeight: "700", color: "#9333ea" },
   footer: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     elevation: 8,
