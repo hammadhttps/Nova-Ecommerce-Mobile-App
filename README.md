@@ -11,12 +11,20 @@ A fully-featured e-commerce mobile application built with React Native (Expo) an
 - **Checkout**: 3-step flow (Address → Payment → Review)
 - **Order Management**: Order history with status filtering, detailed order tracking
 - **Product Comparison**: Compare up to 3 products side by side
-- **Sell Products**: List products for sale with image picker and product details
+- **Sell Products**: List products for sale with image picker and Cloudinary upload
+- **My Products**: View, edit, and delete your own listed products from your profile
+- **Edit Products**: Reuse the sell form with pre-filled data for editing
+- **Delete Products**: Remove your products with confirmation (from My Products or Product Detail)
+- **Profile Photo Upload**: Tap your avatar to upload a profile photo via Cloudinary
+- **Related Products**: Horizontal scroll of same-category products on product detail pages
+- **Self-Buy Prevention**: You cannot purchase your own products (buttons disabled)
 - **Dark Mode**: Full dark mode support with persistence
 - **Notifications**: Read/unread notification center
 - **Address & Payment Management**: CRUD operations for addresses and payment methods
-- **Home Feed**: Personalized feeds (For You, Flash Sale, Recent, Listings, Profile tabs)
+- **Home Feed**: Personalized feeds (For You, Flash Sale, Recent, Listings)
+- **Announcement Ticker**: Auto-scrolling marquee on the homepage showing rotating promotional messages
 - **Help & Support**: In-app help screen
+- **Performance Optimizations**: `React.memo` on ProductCard, `useCallback` on FlatList renderItems, `windowSize`/`maxToRenderPerBatch` tuning for smooth scrolling
 
 ## Tech Stack
 
@@ -31,7 +39,8 @@ A fully-featured e-commerce mobile application built with React Native (Expo) an
 | Icons            | Lucide React Native                                                          |
 | Animations       | React Native Reanimated + Gesture Handler                                    |
 | Toast            | React Native Toast Message                                                   |
-| Backend          | Firebase (Auth, Firestore ready)                                             |
+| Backend          | Firebase (Auth, Firestore)                                                   |
+| Image Hosting    | Cloudinary (product images, profile photos)                                  |
 | HTTP Client      | Axios                                                                        |
 | Image            | Expo Image + Expo Image Picker                                               |
 | Other            | React Native Confetti Cannon, React Native Tab View, React Native Pager View |
@@ -82,6 +91,7 @@ src/
 │   │   └── index.ts
 │   ├── layout/
 │   │   └── SafeScreen.tsx
+│   ├── AnnouncementTicker.tsx # Auto-scrolling promotional marquee
 │   └── ProductCard.tsx      # Product card with wishlist/comparison
 ├── navigation/
 │   ├── RootNavigator.tsx    # Root stack with all screens
@@ -95,12 +105,12 @@ src/
 │   ├── auth/                # Login, Signup
 │   ├── onboarding/          # Splash, Onboarding
 │   ├── home/                # Home screen with FlashSale, ForYou, Recent
-│   ├── home-tabs/           # HomeFeed, Listings, HomeProfileTab
+│   ├── home-tabs/           # HomeFeed, Listings
 │   ├── categories/          # Categories screen
 │   ├── wishlist/            # WishlistItems, PriceDrops, BackInStock tabs
 │   ├── cart/                # InCart, SavedForLater tabs
-│   ├── profile/             # Overview, Orders, Settings tabs
-│   ├── product/             # Product detail
+│   ├── profile/             # Overview (with photo upload), Orders, Settings tabs
+│   ├── product/             # Product detail (related products, edit/delete for owners)
 │   ├── search/              # RecentSearch, Trending, Categories tabs
 │   ├── checkout/            # Checkout flow
 │   ├── orders/              # Order history & detail
@@ -109,7 +119,7 @@ src/
 │   ├── notifications/       # Notification center
 │   ├── help/                # Help screen
 │   ├── settings/            # Settings screen
-│   └── sell/                # Sell product screen
+│   └── sell/                # Sell product screen + MyProductsScreen
 ├── Firebaseconfig.ts         # Firebase configuration
 └── App.tsx                   # Entry point
 ```
@@ -137,6 +147,9 @@ npm run ios        # iOS
 npm run web        # Web (limited support)
 npm run typecheck  # TypeScript check
 npm run check      # Alias for typecheck
+
+# Seed Firestore with sample data
+node scripts/seedFirestore.js
 ```
 
 ### Testing on Device
@@ -149,17 +162,17 @@ npm run check      # Alias for typecheck
 
 ### Service Layer Pattern
 
-<<<<<<< HEAD
-All data access is isolated in `src/services/`. Currently uses mock data but structured for easy Firebase integration:
-=======
-All data access is isolated in `src/services/`. Uses mock data with Firebase integration ready:
->>>>>>> af67225a155f180b2bd060aec347e17508ee7661
+All data access is isolated in `src/services/`. The app uses **Firebase Firestore** for all data (products, users, orders, cart, wishlist, etc.) and **Cloudinary** for image hosting.
 
 ```typescript
-// Easy to swap mock → Firebase
+// Products are fetched live from Firestore
 export const productService = {
-  async getFlashSaleProducts(): Promise<Product[]> {
-    // Returns mock data, ready for Firestore integration
+  async getForYouProducts(): Promise<Product[]> {
+    const q = query(collection(db, "products"), orderBy("rating", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as Product,
+    );
   },
 };
 ```
@@ -180,14 +193,15 @@ RootNavigator (Stack)
 │   ├── Login
 │   ├── Signup
 │   └── Main (Bottom Tabs with swipe)
-│       ├── Home (Top Tabs: For You, Flash Sale, Recent, Listings, Profile)
-│       ├── Categories
+│       ├── Home (Top Tabs: Home, Listings)
+│       ├── Search (Tabs: Recent, Trending, Categories)
 │       ├── Wishlist (Tabs: Wishlist Items, Price Drops, Back in Stock)
 │       ├── Cart (Tabs: In Cart, Saved for Later)
 │       └── Profile (Tabs: Overview, Orders, Settings)
-├── ProductDetail
-├── Search (Tabs: Recent, Trending, Categories)
-├── SellProduct
+├── ProductDetail (Related Products, Edit/Delete for owners)
+├── SearchResults (Tabs: Recent, Trending, Categories)
+├── SellProduct (also used for editing via productId param)
+├── MyProducts (view/manage your listed products)
 ├── Checkout
 ├── OrderHistory
 ├── OrderDetail
@@ -221,11 +235,34 @@ npm install
 npm run typecheck
 ```
 
+## Cloudinary Setup
+
+Product images and profile photos are uploaded to Cloudinary. The configuration is already in the code:
+
+| Setting       | Value          |
+| ------------- | -------------- |
+| Cloud Name    | `dkyjvyz1m`    |
+| Upload Preset | `nova_uploads` |
+
+To use your own Cloudinary account:
+
+1. Create a Cloudinary account at [cloudinary.com](https://cloudinary.com)
+2. Create an unsigned upload preset named `nova_uploads`
+3. Update the cloud name and preset in:
+   - `src/services/product.service.ts` (search for `api.cloudinary.com`)
+   - `src/services/auth.service.ts` (search for `api.cloudinary.com`)
+
 ## Future Enhancements
 
 - [x] Firebase Config integrated
-- [ ] Firestore for real-time data
-- [ ] Firebase Storage for images
+- [x] Firestore for real-time data
+- [x] Cloudinary image uploads (products + profile photos)
+- [x] Product image upload with image picker
+- [x] Profile photo upload
+- [x] Edit & delete own products
+- [x] Related products on product detail
+- [x] Prevent self-purchase
+- [x] Performance optimizations (React.memo, useCallback, FlatList tuning)
 - [ ] Push notifications
 - [ ] Payment gateway (Stripe/Razorpay)
 - [ ] Image caching optimization
