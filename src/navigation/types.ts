@@ -1,6 +1,7 @@
 export type RootStackParamList = {
   Auth: undefined;
-  ProductDetail: { id: number };
+  Main: undefined;
+  ProductDetail: { id: string };
   ProductList: { category?: string; title?: string };
   Checkout: undefined;
   OrderHistory: undefined;
@@ -10,6 +11,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   Help: undefined;
   Settings: undefined;
+  SellProduct: undefined;
 };
 
 export type AuthStackParamList = {
