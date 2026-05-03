@@ -1,33 +1,36 @@
 # Nova E-Commerce Mobile App
 
-A fully-featured e-commerce mobile application built with React Native (Expo) and TypeScript.
+A fully-featured e-commerce mobile application built with React Native (Expo) and TypeScript. Supports both buying and selling products with a modern, intuitive interface.
 
 ## Features
 
 - **Authentication Flow**: Splash → Onboarding → Login/Signup → Main App
-- **Product Browsing**: Flash sales, categories, recommendations, search
-- **Shopping Cart**: Add/remove items, quantity controls, promo codes (NOVA20)
-- **Wishlist**: Save products, stock status tracking
+- **Product Browsing**: Flash sales, categories, recommendations, search with trending categories
+- **Shopping Cart**: Add/remove items, quantity controls, promo codes (NOVA20), saved for later
+- **Wishlist**: Save products, stock status tracking, price drops, back in stock alerts
 - **Checkout**: 3-step flow (Address → Payment → Review)
 - **Order Management**: Order history with status filtering, detailed order tracking
 - **Product Comparison**: Compare up to 3 products side by side
+- **Sell Products**: List products for sale with image picker and product details
 - **Dark Mode**: Full dark mode support with persistence
 - **Notifications**: Read/unread notification center
 - **Address & Payment Management**: CRUD operations for addresses and payment methods
+- **Home Feed**: Personalized feeds (For You, Flash Sale, Recent, Listings, Profile tabs)
+- **Help & Support**: In-app help screen
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React Native (Expo SDK 51) |
-| Language | TypeScript |
-| Navigation | React Navigation v7 (Stack + Bottom Tabs) |
-| State Management | Zustand |
-| Styling | NativeWind (Tailwind for RN) + StyleSheet |
-| Storage | AsyncStorage |
-| Icons | Lucide React Native |
-| Animations | React Native Reanimated |
-| Toast | React Native Toast Message |
+| Layer            | Technology                                |
+| ---------------- | ----------------------------------------- |
+| Framework        | React Native (Expo SDK 51)                |
+| Language         | TypeScript                                |
+| Navigation       | React Navigation v7 (Stack + Bottom Tabs) |
+| State Management | Zustand                                   |
+| Styling          | NativeWind (Tailwind for RN) + StyleSheet |
+| Storage          | AsyncStorage                              |
+| Icons            | Lucide React Native                       |
+| Animations       | React Native Reanimated                   |
+| Toast            | React Native Toast Message                |
 
 ## Project Structure
 
@@ -129,6 +132,7 @@ npm run typecheck  # TypeScript check
 ## Architecture Highlights
 
 ### Service Layer Pattern
+
 All data access is isolated in `src/services/`. Currently uses mock data but structured for easy Firebase integration:
 
 ```typescript
@@ -142,11 +146,13 @@ export const productService = {
 ```
 
 ### State Management
+
 - **Zustand stores** for global state (cart, wishlist, auth, theme, comparison)
 - **AsyncStorage** for persistence (auth token, user, theme preference)
 - **No business logic in UI components** — all logic in stores/services
 
 ### Navigation Structure
+
 ```
 RootNavigator (Stack)
 ├── Auth (Stack)
