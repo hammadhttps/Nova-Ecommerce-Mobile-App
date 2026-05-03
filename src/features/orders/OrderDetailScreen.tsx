@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { Badge, Button } from "@/components/common";
@@ -26,7 +27,9 @@ const timelineSteps = [
 ];
 
 export default function OrderDetailScreen({ navigation }: Props) {
-  const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const order = mockOrderDetail;
 
   const statusColor = (status: string) => {
@@ -74,7 +77,12 @@ export default function OrderDetailScreen({ navigation }: Props) {
           />
         </View>
 
-        <View style={styles.timeline}>
+        <View
+          style={[
+            styles.timeline,
+            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+          ]}
+        >
           {timelineSteps.map((step, i) => (
             <View key={i} style={styles.timelineStep}>
               <View
@@ -257,7 +265,13 @@ export default function OrderDetailScreen({ navigation }: Props) {
                   : "Free"}
             </Text>
           </View>
-          <View style={[styles.payRow, styles.totalRow]}>
+          <View
+            style={[
+              styles.payRow,
+              styles.totalRow,
+              { borderTopColor: isDark ? "#404040" : "#e5e5e5" },
+            ]}
+          >
             <Text
               style={[
                 styles.totalLabel,
@@ -270,7 +284,7 @@ export default function OrderDetailScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(20, insets.bottom) }]}>
           <Button onPress={() => {}} style={{ width: "100%" }}>
             Track Order
           </Button>
@@ -301,7 +315,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 16,
     padding: 16,
-    backgroundColor: "#ffffff",
     borderRadius: 12,
   },
   timelineStep: {
@@ -356,11 +369,10 @@ const styles = StyleSheet.create({
   payVal: { fontSize: 14, fontWeight: "600" },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
     paddingTop: 12,
     marginTop: 8,
   },
   totalLabel: { fontSize: 16, fontWeight: "700" },
   totalValue: { fontSize: 18, fontWeight: "700", color: "#9333ea" },
-  footer: { padding: 20 },
+  footer: { paddingHorizontal: 20, paddingTop: 20 },
 });
