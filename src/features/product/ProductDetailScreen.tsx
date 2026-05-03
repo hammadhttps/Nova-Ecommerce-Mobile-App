@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   TouchableOpacity,
   Dimensions,
   TextInput,
@@ -41,7 +42,7 @@ const { width } = Dimensions.get("window");
 export default function ProductDetailScreen({ route, navigation }: Props) {
   const id = route.params?.id;
   const insets = useSafeAreaInsets();
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { addToCart } = useCart();
   const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
@@ -57,12 +58,21 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
   const [newReview, setNewReview] = useState("");
   const [newRating, setNewRating] = useState(5);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [related, setRelated] = useState<Product[]>([]);
 
   const isInWishlist = wishlistItems.some((item) => item.id === String(id));
 
   useEffect(() => {
     loadProduct();
   }, [id]);
+
+  useEffect(() => {
+    if (product?.category) {
+      productService.getProductsByCategory(product.category).then((data) => {
+        setRelated(data.filter((p) => p.id !== product.id).slice(0, 8));
+      });
+    }
+  }, [product]);
 
   const loadProduct = async () => {
     setLoading(true);
@@ -113,6 +123,71 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
     }
   };
 
+  const relatedList = useMemo(
+    () =>
+      related.length > 0 ? (
+        <View
+          style={[
+            styles.relatedSection,
+            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+          ]}
+        >
+          <Text
+            style={[
+              styles.relatedTitle,
+              { color: isDark ? "#fafafa" : "#030213" },
+            ]}
+          >
+            Related Products
+          </Text>
+          <FlatList
+            data={related}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+            windowSize={3}
+            maxToRenderPerBatch={4}
+            removeClippedSubviews
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  styles.relatedCard,
+                  {
+                    backgroundColor: isDark ? "#262626" : "#f5f5f5",
+                  },
+                ]}
+                onPress={() =>
+                  navigation.push("ProductDetail", { id: item.id })
+                }
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.relatedImage}
+                  resizeMode="cover"
+                />
+                <Text
+                  style={[
+                    styles.relatedName,
+                    {
+                      color: isDark ? "#fafafa" : "#030213",
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {item.name}
+                </Text>
+                <Text style={styles.relatedPrice}>
+                  ${item.price.toFixed(2)}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      ) : null,
+    [related, isDark, navigation],
+  );
+
   if (loading || !product) {
     return (
       <SafeScreen loading>
@@ -128,11 +203,21 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
     );
   }
 
+  const isOwnProduct = user?.id === product.sellerId;
+
   const handleAddToCart = async () => {
+    if (isOwnProduct) {
+      Alert.alert("Unavailable", "You cannot purchase your own product");
+      return;
+    }
     await addToCart(product, quantity);
   };
 
   const handleBuyNow = async () => {
+    if (isOwnProduct) {
+      Alert.alert("Unavailable", "You cannot purchase your own product");
+      return;
+    }
     await addToCart(product, quantity);
     navigation.navigate("Checkout");
   };
@@ -566,6 +651,8 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                 </View>
               </View>
             )}
+
+            {relatedList}
           </View>
         </ScrollView>
 
@@ -578,16 +665,60 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
             },
           ]}
         >
-          <Button
-            onPress={handleAddToCart}
-            variant="outline"
-            style={styles.cartBtn}
-          >
-            <ShoppingCart size={20} color={isDark ? "#fafafa" : "#030213"} />
-          </Button>
-          <Button onPress={handleBuyNow} style={styles.buyBtn}>
-            Buy Now
-          </Button>
+          {isOwnProduct ? (
+            <>
+              <Button
+                onPress={() =>
+                  navigation.navigate("SellProduct", {
+                    productId: product.id,
+                  })
+                }
+                variant="outline"
+                style={styles.editBtn}
+              >
+                Edit
+              </Button>
+              <Button
+                onPress={() =>
+                  Alert.alert(
+                    "Delete Product",
+                    "Are you sure you want to delete this product?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Delete",
+                        style: "destructive",
+                        onPress: async () => {
+                          await productService.deleteProduct(product.id);
+                          navigation.goBack();
+                        },
+                      },
+                    ],
+                  )
+                }
+                variant="destructive"
+                style={styles.deleteBtn}
+              >
+                Delete
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                onPress={handleAddToCart}
+                variant="outline"
+                style={styles.cartBtn}
+              >
+                <ShoppingCart
+                  size={20}
+                  color={isDark ? "#fafafa" : "#030213"}
+                />
+              </Button>
+              <Button onPress={handleBuyNow} style={styles.buyBtn}>
+                Buy Now
+              </Button>
+            </>
+          )}
         </View>
       </View>
     </SafeScreen>
@@ -737,6 +868,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buyBtn: { flex: 1 },
+  editBtn: { flex: 1 },
+  deleteBtn: { flex: 1 },
   addReviewSection: {
     marginTop: 16,
     padding: 16,
@@ -757,5 +890,37 @@ const styles = StyleSheet.create({
   },
   submitReviewBtn: {
     marginTop: 12,
+  },
+  relatedSection: {
+    marginTop: 24,
+    padding: 16,
+    borderRadius: 16,
+  },
+  relatedTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  relatedCard: {
+    width: 140,
+    marginRight: 12,
+    borderRadius: 12,
+    padding: 8,
+  },
+  relatedImage: {
+    width: "100%",
+    height: 120,
+    borderRadius: 8,
+  },
+  relatedName: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 8,
+  },
+  relatedPrice: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#9333ea",
+    marginTop: 4,
   },
 });
