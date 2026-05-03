@@ -1,5 +1,6 @@
 import { User } from '@/types';
 import { mockUser } from '@/services/mocks/users';
+import { delay } from '@/utils/delay';
 
 export interface LoginCredentials {
   email: string;
@@ -14,9 +15,9 @@ export interface SignupCredentials {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await delay(1000);
 
-    if (!credentials.email || !credentials.password) {
+    if (!credentials.email.trim() || !credentials.password.trim()) {
       throw new Error('Email and password are required');
     }
 
@@ -27,9 +28,9 @@ export const authService = {
   },
 
   async signup(credentials: SignupCredentials): Promise<{ user: User; token: string }> {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await delay(1000);
 
-    if (!credentials.name || !credentials.email || !credentials.password) {
+    if (!credentials.name.trim() || !credentials.email.trim() || !credentials.password.trim()) {
       throw new Error('All fields are required');
     }
 
@@ -44,7 +45,7 @@ export const authService = {
   },
 
   async loginWithGoogle(): Promise<{ user: User; token: string }> {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await delay(1000);
     return {
       user: mockUser,
       token: 'mock-google-token-' + Date.now(),
@@ -52,6 +53,6 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await delay(500);
   },
 };

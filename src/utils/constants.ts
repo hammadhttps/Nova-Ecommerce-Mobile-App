@@ -8,3 +8,6 @@ export const ONBOARDING_SCREENS = 3;
 
 export const RECENT_SEARCHES_KEY = 'recent_searches';
 export const ONBOARDING_COMPLETED_KEY = 'onboarding_completed';
+export const AUTH_TOKEN_KEY = 'auth_token';
+export const AUTH_USER_KEY = 'auth_user';
+export const THEME_STORAGE_KEY = 'nova-theme';

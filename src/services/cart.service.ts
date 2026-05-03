@@ -1,16 +1,18 @@
 import { CartItem, Product } from '@/types';
 import { initialCartItems } from '@/services/mocks/cart';
+import { delay } from '@/utils/delay';
+import { PROMO_CODE, PROMO_DISCOUNT } from '@/utils/constants';
 
 let cartState: CartItem[] = [...initialCartItems];
 
 export const cartService = {
   async getCartItems(): Promise<CartItem[]> {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await delay(300);
     return cartState;
   },
 
   async addToCart(product: Product, quantity: number = 1): Promise<CartItem[]> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await delay(200);
 
     const existingItem = cartState.find((item) => item.id === product.id);
     if (existingItem) {
@@ -25,7 +27,7 @@ export const cartService = {
   },
 
   async updateQuantity(productId: number, quantity: number): Promise<CartItem[]> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await delay(200);
 
     if (quantity <= 0) {
       cartState = cartState.filter((item) => item.id !== productId);
@@ -39,13 +41,13 @@ export const cartService = {
   },
 
   async removeFromCart(productId: number): Promise<CartItem[]> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await delay(200);
     cartState = cartState.filter((item) => item.id !== productId);
     return cartState;
   },
 
   async clearCart(): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await delay(200);
     cartState = [];
   },
 
@@ -54,8 +56,8 @@ export const cartService = {
   },
 
   applyPromoCode(code: string): { valid: boolean; discount: number; message: string } {
-    if (code === 'NOVA20') {
-      return { valid: true, discount: 0.2, message: '20% discount applied!' };
+    if (code.trim().toUpperCase() === PROMO_CODE) {
+      return { valid: true, discount: PROMO_DISCOUNT, message: '20% discount applied!' };
     }
     return { valid: false, discount: 0, message: 'Invalid promo code' };
   },

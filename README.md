@@ -19,7 +19,7 @@ A fully-featured e-commerce mobile application built with React Native (Expo) an
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | React Native (Expo SDK 54) |
+| Framework | React Native (Expo SDK 51) |
 | Language | TypeScript |
 | Navigation | React Navigation v7 (Stack + Bottom Tabs) |
 | State Management | Zustand |
@@ -117,6 +117,7 @@ npx expo start
 npm run android    # Android
 npm run ios        # iOS
 npm run web        # Web (limited support)
+npm run typecheck  # TypeScript check
 ```
 
 ### Testing on Device
@@ -174,6 +175,15 @@ RootNavigator (Stack)
 ## Promo Code
 
 Use **NOVA20** at checkout for a 20% discount.
+
+## Quick Health Check
+
+Run this before starting feature work:
+
+```bash
+npm install
+npm run typecheck
+```
 
 ## Future Enhancements
 
