@@ -24,7 +24,7 @@ export default React.memo(function InCartTab({
   onRemove,
   onProductPress,
 }: InCartTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { items } = useCart();
 
@@ -104,6 +104,9 @@ export default React.memo(function InCartTab({
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
       />
     </View>
   );

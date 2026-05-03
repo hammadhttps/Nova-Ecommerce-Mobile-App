@@ -44,7 +44,7 @@ export default React.memo(function SavedForLaterTab({
   onMoveToCart,
   onProductPress,
 }: SavedForLaterTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [items, setItems] = useState(savedItems);
 
@@ -130,6 +130,9 @@ export default React.memo(function SavedForLaterTab({
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
       />
     </View>
   );
