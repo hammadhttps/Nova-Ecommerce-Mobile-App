@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,11 +6,18 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  Image,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useAuthStore } from "@/store/auth.store";
+import { productService } from "@/services/product.service";
 import { Button, Badge, Skeleton } from "@/components/common";
 import {
   Star,
@@ -23,13 +30,9 @@ import {
   Shield,
   RotateCcw,
 } from "lucide-react-native";
-import {
-  allProducts,
-  productReviews,
-  productDetailImages,
-} from "@/services/mocks/products";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
+import { Product, Review } from "@/types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetail">;
 
@@ -37,23 +40,78 @@ const { width } = Dimensions.get("window");
 
 export default function ProductDetailScreen({ route, navigation }: Props) {
   const id = route.params?.id;
-  const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { addToCart } = useCart();
   const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
+  const { user } = useAuthStore();
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<
     "description" | "specs" | "reviews"
   >("description");
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [newReview, setNewReview] = useState("");
+  const [newRating, setNewRating] = useState(5);
+  const [submittingReview, setSubmittingReview] = useState(false);
 
-  const product = allProducts.find((p) => p.id === id);
-  const isInWishlist = wishlistItems.some((item) => item.id === id);
+  const isInWishlist = wishlistItems.some((item) => item.id === String(id));
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+  useEffect(() => {
+    loadProduct();
+  }, [id]);
+
+  const loadProduct = async () => {
+    setLoading(true);
+    try {
+      const [productData, reviewsData] = await Promise.all([
+        productService.getProductById(String(id)),
+        productService.getProductReviews(String(id)),
+      ]);
+      setProduct(productData);
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error("Error loading product:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!user || !product) {
+      Alert.alert("Error", "You must be logged in to submit a review");
+      return;
+    }
+
+    if (!newReview.trim()) {
+      Alert.alert("Error", "Please write a review before submitting");
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const reviewData = {
+        user: user.name || "Anonymous",
+        avatar: user.avatar || "",
+        rating: newRating,
+        date: new Date().toISOString().split("T")[0],
+        comment: newReview.trim(),
+      };
+
+      await productService.addReview(String(id), reviewData);
+      setNewReview("");
+      setNewRating(5);
+      Alert.alert("Success", "Review submitted successfully!");
+      loadProduct(); // Reload to show new review
+    } catch (error) {
+      Alert.alert("Error", "Failed to submit review. Please try again.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   if (loading || !product) {
     return (
@@ -95,7 +153,11 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
           { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
         ]}
       >
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 28 }}
+        >
           <View style={styles.imageSection}>
             <TouchableOpacity
               style={styles.backBtn}
@@ -116,37 +178,49 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                 }}
                 scrollEventThrottle={16}
               >
-                {productDetailImages.map((uri, i) => (
-                  <View key={i} style={{ width }}>
-                    <View
-                      style={{
-                        width,
-                        height: 300,
-                        backgroundColor: isDark ? "#1a1a1a" : "#f0f0f0",
-                      }}
-                    >
-                      <Text
+                {(product?.images || [product?.image].filter(Boolean)).map(
+                  (uri: string, i: number) => (
+                    <View key={i} style={{ width }}>
+                      <View
                         style={{
-                          textAlign: "center",
-                          marginTop: 130,
-                          color: "#999",
+                          width,
+                          height: 300,
+                          backgroundColor: isDark ? "#1a1a1a" : "#f0f0f0",
+                          justifyContent: "center",
+                          alignItems: "center",
                         }}
                       >
-                        Image {i + 1}
-                      </Text>
+                        {uri ? (
+                          <Image
+                            source={{ uri }}
+                            style={{ width: "100%", height: "100%" }}
+                          />
+                        ) : (
+                          <Text
+                            style={{
+                              textAlign: "center",
+                              color: "#737373",
+                            }}
+                          >
+                            No Image
+                          </Text>
+                        )}
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  ),
+                )}
               </ScrollView>
             </View>
             <View style={styles.imageDots}>
-              {productDetailImages.map((_, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={[styles.dot, i === currentImage && styles.activeDot]}
-                  onPress={() => setCurrentImage(i)}
-                />
-              ))}
+              {(product?.images || [product?.image].filter(Boolean)).map(
+                (_: any, i: number) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.dot, i === currentImage && styles.activeDot]}
+                    onPress={() => setCurrentImage(i)}
+                  />
+                ),
+              )}
             </View>
             <TouchableOpacity
               style={styles.wishBtn}
@@ -174,7 +248,12 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
             <View style={styles.priceRow}>
               <Text style={styles.price}>${product.price.toFixed(2)}</Text>
               {product.originalPrice && (
-                <Text style={styles.originalPrice}>
+                <Text
+                  style={[
+                    styles.originalPrice,
+                    { color: isDark ? "#737373" : "#a3a3a3" },
+                  ]}
+                >
                   ${product.originalPrice.toFixed(2)}
                 </Text>
               )}
@@ -209,7 +288,12 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
               </Text>
               <View style={styles.qtyControls}>
                 <TouchableOpacity
-                  style={styles.qtyBtn}
+                  style={[
+                    styles.qtyBtn,
+                    {
+                      backgroundColor: isDark ? "#333333" : "#f0f0f0",
+                    },
+                  ]}
                   onPress={() => setQuantity(Math.max(1, quantity - 1))}
                 >
                   <Minus size={18} color={isDark ? "#fafafa" : "#030213"} />
@@ -223,7 +307,12 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                   {quantity}
                 </Text>
                 <TouchableOpacity
-                  style={styles.qtyBtn}
+                  style={[
+                    styles.qtyBtn,
+                    {
+                      backgroundColor: isDark ? "#333333" : "#f0f0f0",
+                    },
+                  ]}
                   onPress={() => setQuantity(quantity + 1)}
                 >
                   <Plus size={18} color={isDark ? "#fafafa" : "#030213"} />
@@ -282,7 +371,12 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
               </View>
             </View>
 
-            <View style={styles.tabs}>
+            <View
+              style={[
+                styles.tabs,
+                { borderBottomColor: isDark ? "#404040" : "#e5e5e5" },
+              ]}
+            >
               {(["description", "specs", "reviews"] as const).map((tab) => (
                 <TouchableOpacity
                   key={tab}
@@ -330,7 +424,15 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     Color: "Black",
                   },
                 ).map(([key, val]) => (
-                  <View key={key} style={styles.specRow}>
+                  <View
+                    key={key}
+                    style={[
+                      styles.specRow,
+                      {
+                        borderBottomColor: isDark ? "#333333" : "#f0f0f0",
+                      },
+                    ]}
+                  >
                     <Text
                       style={[
                         styles.specKey,
@@ -354,10 +456,17 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
 
             {activeTab === "reviews" && (
               <View>
-                {productReviews.map((review) => (
+                {reviews.map((review) => (
                   <View key={review.id} style={styles.reviewCard}>
                     <View style={styles.reviewHeader}>
-                      <View style={styles.reviewAvatar} />
+                      <View
+                        style={[
+                          styles.reviewAvatar,
+                          {
+                            backgroundColor: isDark ? "#404040" : "#e5e5e5",
+                          },
+                        ]}
+                      />
                       <View>
                         <Text
                           style={[
@@ -381,7 +490,13 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                           <Star
                             key={i}
                             size={12}
-                            color={i < review.rating ? "#fbbf24" : "#d4d4d4"}
+                            color={
+                              i < review.rating
+                                ? "#fbbf24"
+                                : isDark
+                                  ? "#525252"
+                                  : "#d4d4d4"
+                            }
                             fill={i < review.rating ? "#fbbf24" : "transparent"}
                           />
                         ))}
@@ -397,6 +512,58 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     </Text>
                   </View>
                 ))}
+
+                <View
+                  style={[
+                    styles.addReviewSection,
+                    {
+                      backgroundColor: isDark ? "#262626" : "#f5f5f5",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.reviewName, { marginTop: 16 }]}>
+                    Add Your Review
+                  </Text>
+                  <View style={styles.ratingInput}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity
+                        key={star}
+                        onPress={() => setNewRating(star)}
+                      >
+                        <Star
+                          size={24}
+                          color={star <= newRating ? "#fbbf24" : "#d4d4d4"}
+                          fill={star <= newRating ? "#fbbf24" : "transparent"}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <TextInput
+                    style={[
+                      styles.reviewInput,
+                      {
+                        borderColor: isDark ? "#404040" : "#e5e5e5",
+                        color: isDark ? "#fafafa" : "#030213",
+                      },
+                    ]}
+                    value={newReview}
+                    onChangeText={setNewReview}
+                    placeholder="Write your review..."
+                    multiline
+                    numberOfLines={4}
+                  />
+                  <Button
+                    onPress={handleSubmitReview}
+                    style={styles.submitReviewBtn}
+                    disabled={submittingReview}
+                  >
+                    {submittingReview ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      "Submit Review"
+                    )}
+                  </Button>
+                </View>
               </View>
             )}
           </View>
@@ -405,7 +572,10 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
         <View
           style={[
             styles.footer,
-            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+            {
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+              paddingBottom: Math.max(16, insets.bottom),
+            },
           ]}
         >
           <Button
@@ -482,7 +652,6 @@ const styles = StyleSheet.create({
   price: { fontSize: 24, fontWeight: "700", color: "#9333ea" },
   originalPrice: {
     fontSize: 16,
-    color: "#a3a3a3",
     textDecorationLine: "line-through",
   },
   ratingRow: {
@@ -504,7 +673,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#f0f0f0",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -523,7 +691,6 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
     marginTop: 20,
   },
   tab: { flex: 1, paddingVertical: 12, alignItems: "center" },
@@ -535,7 +702,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   specKey: { fontSize: 14 },
   specVal: { fontSize: 14, fontWeight: "500" },
@@ -546,7 +712,6 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     marginRight: 12,
-    backgroundColor: "#e5e5e5",
   },
   reviewName: { fontSize: 14, fontWeight: "600" },
   reviewDate: { fontSize: 12 },
@@ -554,7 +719,8 @@ const styles = StyleSheet.create({
   reviewText: { fontSize: 14, lineHeight: 20 },
   footer: {
     flexDirection: "row",
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     gap: 12,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -571,4 +737,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buyBtn: { flex: 1 },
+  addReviewSection: {
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 8,
+  },
+  ratingInput: {
+    flexDirection: "row",
+    gap: 8,
+    marginVertical: 12,
+  },
+  reviewInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    textAlignVertical: "top",
+    minHeight: 100,
+  },
+  submitReviewBtn: {
+    marginTop: 12,
+  },
 });
