@@ -26,11 +26,21 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionLabel,
   onAction,
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const IconComponent = iconMap[icon];
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 28,
+        paddingVertical: 32,
+        width: '100%',
+      }}
+    >
       <IconComponent size={64} color={isDark ? '#525252' : '#d4d4d4'} />
       <Text
         style={{
@@ -39,6 +49,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           color: isDark ? '#fafafa' : '#030213',
           marginTop: 16,
           textAlign: 'center',
+          maxWidth: '100%',
         }}
       >
         {title}
@@ -50,6 +61,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             color: isDark ? '#a3a3a3' : '#737373',
             marginTop: 8,
             textAlign: 'center',
+            maxWidth: '100%',
           }}
         >
           {message}

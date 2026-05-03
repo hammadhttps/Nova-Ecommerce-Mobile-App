@@ -14,7 +14,8 @@ import { Avatar } from "@/components/common";
 
 const HomeProfileTabScreen: React.FC = React.memo(
   function HomeProfileTabScreen() {
-    const { isDark } = useTheme();
+    const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
     const navigation = useNavigation();
     const { user } = useAuthStore();
 

@@ -11,7 +11,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   message = 'Loading...',
   fullScreen = true,
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

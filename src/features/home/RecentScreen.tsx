@@ -18,7 +18,8 @@ interface RecentScreenProps {
 
 const RecentScreen: React.FC<RecentScreenProps> = React.memo(
   ({ onProductPress }) => {
-    const { isDark } = useTheme();
+    const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
     const renderItem = ({ item }: { item: Product }) => (
       <TouchableOpacity

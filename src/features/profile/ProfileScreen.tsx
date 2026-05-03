@@ -17,7 +17,8 @@ const routes: TabRoute[] = [
 ];
 
 export default function ProfileScreen({ navigation }: { navigation: any }) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { logout } = useAuthStore();
 
   const handleOrderPress = useCallback(
@@ -45,7 +46,7 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
   );
 
   const renderScene = SceneMap({
-    overview: () => <OverviewTab />,
+    overview: () => <OverviewTab navigation={navigation} />,
     orders: () => <OrdersTab onPress={handleOrderPress} />,
     settings: () => (
       <SettingsTab

@@ -26,7 +26,8 @@ interface RecentSearchTabProps {
 export default React.memo(function RecentSearchTab({
   onSelectSearch,
 }: RecentSearchTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [searches, setSearches] = useState(initialRecentSearches);
 
   const handleClearAll = useCallback(() => {
@@ -40,7 +41,13 @@ export default React.memo(function RecentSearchTab({
   const renderItem = useCallback(
     ({ item, index }: { item: string; index: number }) => (
       <TouchableOpacity
-        style={styles.item}
+        style={[
+          styles.item,
+          index < searches.length - 1 && {
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: isDark ? "#333333" : "#f0f0f0",
+          },
+        ]}
         onPress={() => onSelectSearch(item)}
         activeOpacity={0.7}
       >
@@ -62,7 +69,7 @@ export default React.memo(function RecentSearchTab({
         </TouchableOpacity>
       </TouchableOpacity>
     ),
-    [isDark, onSelectSearch, handleRemove],
+    [isDark, onSelectSearch, handleRemove, searches.length],
   );
 
   if (searches.length === 0) {
@@ -120,18 +127,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 12,
   },
   title: { fontSize: 16, fontWeight: "700" },
-  listContent: { paddingHorizontal: 16 },
+  listContent: { paddingHorizontal: 20, paddingBottom: 16 },
   item: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   row: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
   label: { fontSize: 15 },

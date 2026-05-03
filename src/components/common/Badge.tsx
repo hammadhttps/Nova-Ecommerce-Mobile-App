@@ -13,7 +13,8 @@ export const Badge: React.FC<BadgeProps> = ({
   variant = 'default',
   size = 'sm',
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const variantStyles: Record<string, { container: ViewStyle; text: TextStyle }> = {
     default: {

@@ -14,7 +14,7 @@ import { Product } from "@/types";
 
 const savedItems: Product[] = [
   {
-    id: 101,
+    id: "101",
     name: "Ceramic Coffee Mug Set",
     price: 18.99,
     rating: 4.4,
@@ -23,7 +23,7 @@ const savedItems: Product[] = [
     category: "Home",
   },
   {
-    id: 102,
+    id: "102",
     name: "Leather Wallet Classic",
     price: 54.99,
     originalPrice: 69.99,
@@ -44,7 +44,8 @@ export default React.memo(function SavedForLaterTab({
   onMoveToCart,
   onProductPress,
 }: SavedForLaterTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [items, setItems] = useState(savedItems);
 
   const handleMoveToCart = useCallback(

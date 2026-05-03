@@ -71,7 +71,8 @@ const contacts = [
 ];
 
 export default function HelpScreen({ navigation }: Props) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [query, setQuery] = useState("");
 
   return (

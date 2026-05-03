@@ -37,18 +37,27 @@ export default React.memo(function SettingsTab({
   onLogout,
   onPress,
 }: SettingsTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
     ({
       item,
+      index,
     }: {
       item: { icon: LucideIcon; label: string; value?: string };
+      index: number;
     }) => {
       const Icon = item.icon;
       return (
         <TouchableOpacity
-          style={styles.item}
+          style={[
+            styles.item,
+            index < settingsItems.length - 1 && {
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: isDark ? "#333333" : "#f0f0f0",
+            },
+          ]}
           onPress={() => {
             if (item.label === "Dark Mode") {
               onToggleDarkMode();
@@ -116,7 +125,9 @@ export default React.memo(function SettingsTab({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   card: {
-    margin: 16,
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 16,
     borderRadius: 16,
     overflow: "hidden",
     elevation: 2,
@@ -130,8 +141,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   label: { flex: 1, marginLeft: 14, fontSize: 15 },
   value: { fontSize: 13, marginRight: 8 },
@@ -139,7 +148,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 16,
+    marginHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,

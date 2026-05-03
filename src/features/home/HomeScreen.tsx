@@ -12,7 +12,8 @@ interface HomeScreenProps {
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { fetchCart } = useCart();
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +34,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <Skeleton width={100} height={16} />
           </View>
           <Skeleton height={48} borderRadius={12} />
-          <View style={{ marginTop: 24, paddingHorizontal: 16 }}>
+          <View style={{ marginTop: 24, paddingHorizontal: 20 }}>
             <Skeleton width={120} height={24} />
           </View>
         </View>
@@ -114,8 +115,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 12,
     paddingBottom: 8,
   },
   greeting: {
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 16,
+    marginHorizontal: 20,
     marginTop: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flex: 1,
-    marginTop: 16,
+    marginTop: 12,
   },
 });
 

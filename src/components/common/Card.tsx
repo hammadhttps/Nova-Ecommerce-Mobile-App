@@ -9,7 +9,8 @@ interface CardProps {
 }
 
 export const Card: React.FC<CardProps> = ({ children, style, padding = 16 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   return (
     <View

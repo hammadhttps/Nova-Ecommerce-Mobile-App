@@ -1,7 +1,8 @@
-import { create } from 'zustand';
-import { CartItem, Product } from '@/types';
-import { cartService } from '@/services/cart.service';
-import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from '@/utils/constants';
+import { create } from "zustand";
+import { CartItem, Product } from "@/types";
+import { cartService } from "@/services/cart.service";
+import { useAuthStore } from "./auth.store";
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/utils/constants";
 
 interface CartState {
   items: CartItem[];
@@ -12,8 +13,8 @@ interface CartState {
 
   fetchCart: () => Promise<void>;
   addToCart: (product: Product, quantity?: number) => Promise<void>;
-  updateQuantity: (productId: number, quantity: number) => Promise<void>;
-  removeFromCart: (productId: number) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+  removeFromCart: (productId: string) => Promise<void>;
   clearCart: () => Promise<void>;
   applyPromoCode: (code: string) => void;
   removePromoCode: () => void;
@@ -28,12 +29,15 @@ export const useCartStore = create<CartState>((set, get) => ({
   isLoading: false,
   promoCode: null,
   promoDiscount: 0,
-  promoMessage: '',
+  promoMessage: "",
 
   fetchCart: async () => {
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+
     set({ isLoading: true });
     try {
-      const items = await cartService.getCartItems();
+      const items = await cartService.getCartItems(userId);
       set({ items });
     } finally {
       set({ isLoading: false });
@@ -41,23 +45,35 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   addToCart: async (product: Product, quantity = 1) => {
-    const items = await cartService.addToCart(product, quantity);
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+
+    const items = await cartService.addToCart(userId, product, quantity);
     set({ items });
   },
 
-  updateQuantity: async (productId: number, quantity: number) => {
-    const items = await cartService.updateQuantity(productId, quantity);
+  updateQuantity: async (productId: string, quantity: number) => {
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+
+    const items = await cartService.updateQuantity(userId, productId, quantity);
     set({ items });
   },
 
-  removeFromCart: async (productId: number) => {
-    const items = await cartService.removeFromCart(productId);
+  removeFromCart: async (productId: string) => {
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+
+    const items = await cartService.removeFromCart(userId, productId);
     set({ items });
   },
 
   clearCart: async () => {
-    await cartService.clearCart();
-    set({ items: [], promoCode: null, promoDiscount: 0, promoMessage: '' });
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+
+    await cartService.clearCart(userId);
+    set({ items: [], promoCode: null, promoDiscount: 0, promoMessage: "" });
   },
 
   applyPromoCode: (code: string) => {
@@ -70,7 +86,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   removePromoCode: () => {
-    set({ promoCode: null, promoDiscount: 0, promoMessage: '' });
+    set({ promoCode: null, promoDiscount: 0, promoMessage: "" });
   },
 
   getSubtotal: () => {

@@ -14,8 +14,8 @@ import { CartItem } from "@/types";
 import { Button } from "@/components/common";
 
 interface InCartTabProps {
-  onUpdateQuantity: (id: number, qty: number) => void;
-  onRemove: (id: number) => void;
+  onUpdateQuantity: (id: string, qty: number) => void;
+  onRemove: (id: string) => void;
   onProductPress: (item: CartItem) => void;
 }
 
@@ -24,7 +24,8 @@ export default React.memo(function InCartTab({
   onRemove,
   onProductPress,
 }: InCartTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { items } = useCart();
 
   const renderItem = useCallback(
@@ -52,7 +53,10 @@ export default React.memo(function InCartTab({
           <View style={styles.row}>
             <View style={styles.qtyRow}>
               <TouchableOpacity
-                style={styles.qtyBtn}
+                style={[
+                  styles.qtyBtn,
+                  { backgroundColor: isDark ? "#333333" : "#f0f0f0" },
+                ]}
                 onPress={() =>
                   onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))
                 }
@@ -68,7 +72,10 @@ export default React.memo(function InCartTab({
                 {item.quantity}
               </Text>
               <TouchableOpacity
-                style={styles.qtyBtn}
+                style={[
+                  styles.qtyBtn,
+                  { backgroundColor: isDark ? "#333333" : "#f0f0f0" },
+                ]}
                 onPress={() => onUpdateQuantity(item.id, item.quantity + 1)}
               >
                 <Plus size={16} color={isDark ? "#fafafa" : "#030213"} />
@@ -130,7 +137,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#f0f0f0",
     alignItems: "center",
     justifyContent: "center",
   },

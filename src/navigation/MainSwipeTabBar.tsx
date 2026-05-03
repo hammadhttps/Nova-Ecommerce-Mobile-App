@@ -55,7 +55,8 @@ export default function MainSwipeTabBar({
   navigation,
 }: MaterialTopTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { cartCount } = useCart();
 
   const inactive = isDark ? "#64748b" : "#94a3b8";

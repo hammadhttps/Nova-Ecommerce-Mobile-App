@@ -24,7 +24,8 @@ export const SafeScreen: React.FC<SafeScreenProps> = ({
   hasScrollView = false,
   keyboardAware = false,
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const insets = useSafeAreaInsets();
 
   const backgroundColor = isDark ? "#0f0f0f" : "#ffffff";

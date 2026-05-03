@@ -16,7 +16,8 @@ const routes: TabRoute[] = [
 ];
 
 export default function SearchScreen({ navigation }: { navigation: any }) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [query, setQuery] = useState("");
 
   const handleProductPress = useCallback(

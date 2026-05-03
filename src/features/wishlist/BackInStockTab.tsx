@@ -14,7 +14,7 @@ import { Product } from "@/types";
 
 const backInStock: Product[] = [
   {
-    id: 301,
+    id: "301",
     name: "Premium Sunglasses",
     price: 129.99,
     rating: 4.9,
@@ -32,7 +32,8 @@ interface BackInStockTabProps {
 export default React.memo(function BackInStockTab({
   onProductPress,
 }: BackInStockTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (

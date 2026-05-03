@@ -1,18 +1,23 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 import { Avatar } from "@/components/common";
 import { useAuthStore } from "@/store/auth.store";
+import { Plus } from "lucide-react-native";
 
-export default React.memo(function OverviewTab() {
-  const { isDark } = useTheme();
+export default React.memo(function OverviewTab({ navigation }: any) {
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { user } = useAuthStore();
 
+  // TODO: Fetch real stats from Firestore
   const stats = [
-    { label: "Orders", value: 24 },
-    { label: "Wishlist", value: 12 },
-    { label: "Reviews", value: 8 },
+    { label: "Orders", value: 0 },
+    { label: "Wishlist", value: 0 },
+    { label: "Reviews", value: 0 },
   ];
+
+  if (!user) return null;
 
   return (
     <View
@@ -27,12 +32,12 @@ export default React.memo(function OverviewTab() {
           { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
         ]}
       >
-        <Avatar size={72} name={user?.name || "User"} uri={user?.avatar} />
+        <Avatar size={72} name={user.name} uri={user.avatar} />
         <Text style={[styles.name, { color: isDark ? "#fafafa" : "#030213" }]}>
-          {user?.name || "Alex Johnson"}
+          {user.name}
         </Text>
         <Text style={[styles.email, { color: isDark ? "#a3a3a3" : "#737373" }]}>
-          {user?.email || "alex@email.com"}
+          {user.email}
         </Text>
         <View style={styles.stats}>
           {stats.map((s, i) => (
@@ -56,6 +61,13 @@ export default React.memo(function OverviewTab() {
             </View>
           ))}
         </View>
+        <TouchableOpacity
+          style={[styles.sellButton, { backgroundColor: "#9333ea" }]}
+          onPress={() => navigation.navigate("SellProduct")}
+        >
+          <Plus size={20} color="#fff" />
+          <Text style={styles.sellButtonText}>Sell Product</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -85,4 +97,18 @@ const styles = StyleSheet.create({
   statItem: { alignItems: "center" },
   statVal: { fontSize: 20, fontWeight: "700" },
   statLabel: { fontSize: 12, marginTop: 4 },
+  sellButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  sellButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });

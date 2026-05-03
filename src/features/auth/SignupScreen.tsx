@@ -19,8 +19,9 @@ interface SignupScreenProps {
 }
 
 const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
-  const { isDark } = useTheme();
-  const { signup, loginWithGoogle, isLoading, error } = useAuthStore();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
+  const { signup, isLoading, error } = useAuthStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,17 +60,10 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleGoogleSignup = async () => {
-    try {
-      await loginWithGoogle();
-      navigation.replace('Main');
-    } catch (err) {
-      // Error handled by store
-    }
-  };
+  const screenBg = isDark ? '#0f0f0f' : '#ffffff';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: screenBg }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -131,21 +125,6 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
             >
               Create Account
             </Button>
-
-            <View style={styles.divider}>
-              <View style={[styles.dividerLine, { backgroundColor: isDark ? '#262626' : '#ececf0' }]} />
-              <Text style={[styles.dividerText, { color: isDark ? '#737373' : '#a3a3a3' }]}>or</Text>
-              <View style={[styles.dividerLine, { backgroundColor: isDark ? '#262626' : '#ececf0' }]} />
-            </View>
-
-            <Button
-              variant="outline"
-              size="lg"
-              loading={isLoading}
-              onPress={handleGoogleSignup}
-            >
-              Sign up with Google
-            </Button>
           </View>
 
           <View style={styles.footer}>
@@ -170,7 +149,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingTop: 24,
+    paddingBottom: 40,
   },
   header: {
     marginBottom: 32,
@@ -201,19 +181,6 @@ const styles = StyleSheet.create({
   },
   button: {
     marginBottom: 16,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-    gap: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    fontSize: 14,
   },
   footer: {
     flexDirection: 'row',

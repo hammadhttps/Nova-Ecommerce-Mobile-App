@@ -15,7 +15,7 @@ import { Product } from "@/types";
 
 const priceDrops: Product[] = [
   {
-    id: 201,
+    id: "201",
     name: "Premium Sunglasses",
     price: 109.99,
     originalPrice: 129.99,
@@ -27,7 +27,7 @@ const priceDrops: Product[] = [
     category: "Fashion",
   },
   {
-    id: 202,
+    id: "202",
     name: "Smart Home Hub",
     price: 79.99,
     originalPrice: 99.99,
@@ -39,7 +39,7 @@ const priceDrops: Product[] = [
     category: "Home",
   },
   {
-    id: 203,
+    id: "203",
     name: "Running Shoes Elite",
     price: 69.99,
     originalPrice: 79.99,
@@ -59,7 +59,8 @@ interface PriceDropsTabProps {
 export default React.memo(function PriceDropsTab({
   onProductPress,
 }: PriceDropsTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (

@@ -1,10 +1,10 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import SplashScreen from '@/features/onboarding/SplashScreen';
-import OnboardingScreen from '@/features/onboarding/OnboardingScreen';
-import LoginScreen from '@/features/auth/LoginScreen';
-import SignupScreen from '@/features/auth/SignupScreen';
-import MainTabs from './MainTabs';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import SplashScreen from "@/features/onboarding/SplashScreen";
+import OnboardingScreen from "@/features/onboarding/OnboardingScreen";
+import LoginScreen from "@/features/auth/LoginScreen";
+import SignupScreen from "@/features/auth/SignupScreen";
+import MainTabs from "./MainTabs";
 
 export type AuthStackParamList = {
   Splash: undefined;
@@ -27,7 +27,6 @@ const AuthStack: React.FC = () => {
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Signup" component={SignupScreen} />
-      <Stack.Screen name="Main" component={MainTabs} />
     </Stack.Navigator>
   );
 };

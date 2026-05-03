@@ -6,7 +6,7 @@ import { Product } from "@/types";
 
 const trendingProducts: Product[] = [
   {
-    id: 10,
+    id: "10",
     name: "Bluetooth Speaker",
     price: 49.99,
     rating: 4.5,
@@ -16,7 +16,7 @@ const trendingProducts: Product[] = [
     category: "Electronics",
   },
   {
-    id: 11,
+    id: "11",
     name: "Laptop Stand",
     price: 39.99,
     rating: 4.7,
@@ -26,7 +26,7 @@ const trendingProducts: Product[] = [
     category: "Electronics",
   },
   {
-    id: 12,
+    id: "12",
     name: "Phone Case Pro",
     price: 19.99,
     rating: 4.3,
@@ -36,7 +36,7 @@ const trendingProducts: Product[] = [
     category: "Electronics",
   },
   {
-    id: 13,
+    id: "13",
     name: "Desk Lamp LED",
     price: 34.99,
     originalPrice: 49.99,
@@ -48,7 +48,7 @@ const trendingProducts: Product[] = [
     category: "Home",
   },
   {
-    id: 14,
+    id: "14",
     name: "Yoga Mat Pro",
     price: 29.99,
     rating: 4.4,
@@ -58,7 +58,7 @@ const trendingProducts: Product[] = [
     category: "Sports",
   },
   {
-    id: 15,
+    id: "15",
     name: "Mechanical Keyboard",
     price: 79.99,
     originalPrice: 99.99,
@@ -78,7 +78,8 @@ interface TrendingTabProps {
 export default React.memo(function TrendingTab({
   onProductPress,
 }: TrendingTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (

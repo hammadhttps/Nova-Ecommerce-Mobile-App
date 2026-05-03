@@ -11,7 +11,8 @@ interface ForYouScreenProps {
 
 const ForYouScreen: React.FC<ForYouScreenProps> = React.memo(
   ({ onProductPress }) => {
-    const { isDark } = useTheme();
+    const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
     const renderItem = ({ item }: { item: Product }) => (
       <View style={styles.cardWrapper}>
@@ -47,9 +48,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 20,
+    paddingBottom: 28,
   },
   row: {
     gap: 12,

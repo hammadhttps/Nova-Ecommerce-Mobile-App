@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,11 @@ import {
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { Badge } from "@/components/common/Badge";
-import { mockOrders } from "@/services/mocks/orders";
+import { orderService } from "@/services/order.service";
+import { Order } from "@/types";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
+import { useAuthStore } from "@/store/auth.store";
 
 type Props = NativeStackScreenProps<RootStackParamList, "OrderHistory">;
 
@@ -33,7 +35,7 @@ const tabLabels: Record<TabType, string> = {
   cancelled: "Cancelled",
 };
 
-const statusVariant = (
+const getStatusVariant = (
   status: string,
 ): "success" | "info" | "warning" | "destructive" | "default" => {
   if (status === "delivered") return "success";
@@ -44,46 +46,77 @@ const statusVariant = (
 };
 
 export default function OrderHistoryScreen({ navigation }: Props) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>("all");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filtered =
-    activeTab === "all"
-      ? mockOrders
-      : mockOrders.filter((o) => o.status === activeTab);
+  useEffect(() => {
+    if (!user?.id) return;
 
-  const renderItem = ({ item }: { item: (typeof mockOrders)[0] }) => (
+    setIsLoading(true);
+    orderService
+      .getOrdersByStatus(user.id, activeTab)
+      .then((orders) => {
+        setOrders(orders);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, [user?.id, activeTab]);
+
+  const renderItem = ({ item }: { item: Order }) => (
     <TouchableOpacity
       style={[styles.card, { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" }]}
       onPress={() => navigation.navigate("OrderDetail", { id: item.id })}
       activeOpacity={0.7}
     >
       <View style={styles.header}>
-        <View>
-          <Text style={[styles.id, { color: isDark ? "#fafafa" : "#030213" }]}>
-            {item.id}
-          </Text>
-          <Text
-            style={[styles.date, { color: isDark ? "#a3a3a3" : "#737373" }]}
-          >
-            {item.date}
-          </Text>
-        </View>
+        <Text
+          style={[styles.orderId, { color: isDark ? "#fafafa" : "#030213" }]}
+        >
+          {item.id}
+        </Text>
         <Badge
           label={tabLabels[item.status as TabType] || item.status}
-          variant={statusVariant(item.status)}
+          variant={getStatusVariant(item.status)}
+          size="sm"
         />
       </View>
-      <View style={styles.items}>
-        {item.items.slice(0, 3).map((it, i) => (
-          <Image key={i} source={{ uri: it.image }} style={styles.thumb} />
-        ))}
+      {item.items.slice(0, 3).map((product, index) => (
+        <View key={index} style={styles.productRow}>
+          <Image source={{ uri: product.image }} style={styles.productImage} />
+          <View style={styles.productInfo}>
+            <Text
+              style={[
+                styles.productName,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+              numberOfLines={1}
+            >
+              {product.name} x{product.quantity}
+            </Text>
+            <Text style={[styles.productPrice, { color: "#9333ea" }]}>
+              ${product.price.toFixed(2)}
+            </Text>
+          </View>
+        </View>
+      ))}
+      <View style={styles.footer}>
         <Text style={[styles.total, { color: isDark ? "#fafafa" : "#030213" }]}>
-          ${item.total.toFixed(2)}
+          Total: ${item.total.toFixed(2)}
+        </Text>
+        <Text style={[styles.date, { color: isDark ? "#a3a3a3" : "#737373" }]}>
+          {item.date}
         </Text>
       </View>
     </TouchableOpacity>
   );
+
+  if (isLoading) {
+    return <SafeScreen loading />;
+  }
 
   return (
     <SafeScreen>
@@ -93,31 +126,25 @@ export default function OrderHistoryScreen({ navigation }: Props) {
           { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
         ]}
       >
-        <View style={styles.header}>
-          <Text
-            style={[styles.title, { color: isDark ? "#fafafa" : "#030213" }]}
-          >
-            My Orders
-          </Text>
-        </View>
-        <View style={styles.tabBar}>
+        {/* Tabs */}
+        <View style={styles.tabs}>
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tab, activeTab === tab && styles.activeTab]}
+              style={[
+                styles.tab,
+                activeTab === tab && styles.tabActive,
+                activeTab === tab && {
+                  borderBottomColor: "#9333ea",
+                },
+              ]}
               onPress={() => setActiveTab(tab)}
             >
               <Text
                 style={[
                   styles.tabText,
-                  {
-                    color:
-                      activeTab === tab
-                        ? "#9333ea"
-                        : isDark
-                          ? "#737373"
-                          : "#a3a3a3",
-                  },
+                  { color: isDark ? "#fafafa" : "#030213" },
+                  activeTab === tab && { color: "#9333ea", fontWeight: "600" },
                 ]}
               >
                 {tabLabels[tab]}
@@ -125,18 +152,20 @@ export default function OrderHistoryScreen({ navigation }: Props) {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Orders List */}
         <FlatList
-          data={filtered}
+          data={orders}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <Text
-              style={[styles.empty, { color: isDark ? "#a3a3a3" : "#737373" }]}
-            >
-              No orders found
-            </Text>
+            <View style={styles.empty}>
+              <Text style={{ color: isDark ? "#a3a3a3" : "#737373" }}>
+                No orders found
+              </Text>
+            </View>
           }
         />
       </View>
@@ -146,13 +175,20 @@ export default function OrderHistoryScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingVertical: 16 },
-  title: { fontSize: 28, fontWeight: "700" },
-  tabBar: { flexDirection: "row", paddingHorizontal: 20, marginBottom: 16 },
-  tab: { marginRight: 16, paddingVertical: 8 },
-  activeTab: { borderBottomWidth: 2, borderBottomColor: "#9333ea" },
-  tabText: { fontSize: 14, fontWeight: "600" },
-  listContent: { paddingHorizontal: 20, paddingBottom: 20 },
+  tabs: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 16,
+  },
+  tab: {
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  tabActive: {},
+  tabText: { fontSize: 14 },
+  listContent: { padding: 20 },
   card: {
     borderRadius: 12,
     padding: 16,
@@ -163,15 +199,37 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  cardHeader: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
-  id: { fontSize: 16, fontWeight: "600" },
-  date: { fontSize: 12, marginTop: 2 },
-  items: { flexDirection: "row", alignItems: "center" },
-  thumb: { width: 40, height: 40, borderRadius: 8, marginRight: 8 },
-  total: { marginLeft: "auto", fontSize: 16, fontWeight: "700" },
-  empty: { textAlign: "center", marginTop: 40, fontSize: 16 },
+  orderId: { fontSize: 16, fontWeight: "600" },
+  productRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  productImage: { width: 40, height: 40, borderRadius: 6 },
+  productInfo: { flex: 1, marginLeft: 12 },
+  productName: { fontSize: 14, marginBottom: 4 },
+  productPrice: { fontSize: 14, fontWeight: "600" },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e5e5",
+  },
+  total: { fontSize: 16, fontWeight: "700" },
+  date: { fontSize: 12 },
+  empty: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 40,
+  },
 });
