@@ -19,8 +19,8 @@ const HomeProfileTabScreen: React.FC = React.memo(
       navigation.navigate("Profile" as never);
     }, [navigation]);
 
-    const name = user?.name ?? "Alex Johnson";
-    const email = user?.email ?? "alex@email.com";
+    const name = user?.name ?? "User";
+    const email = user?.email ?? "";
 
     return (
       <View
