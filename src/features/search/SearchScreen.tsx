@@ -40,10 +40,13 @@ export default function SearchScreen({ navigation }: { navigation: any }) {
     [navigation],
   );
 
-  const handleSelectSearch = useCallback((term: string) => {
-    setQuery(term);
-    handleSearch();
-  }, []);
+  const handleSelectSearch = useCallback(
+    (term: string) => {
+      setQuery(term);
+      navigation.navigate("SearchResults", { query: term.trim() });
+    },
+    [navigation],
+  );
 
   const handleSearch = useCallback(async () => {
     if (!query.trim()) return;

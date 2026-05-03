@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: 16,
-    padding: 16,
+    padding: 18,
     alignItems: "center",
     elevation: 2,
     shadowColor: "#000",
@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   icon: { fontSize: 28 },
   name: { fontSize: 15, fontWeight: "600" },
-  subCount: { fontSize: 12, marginTop: 4 },
+  subCount: { fontSize: 12, marginTop: 6 },
 });

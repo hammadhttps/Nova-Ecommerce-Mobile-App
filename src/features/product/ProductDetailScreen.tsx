@@ -109,6 +109,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
         rating: newRating,
         date: new Date().toISOString().split("T")[0],
         comment: newReview.trim(),
+        userId: user.id,
       };
 
       await productService.addReview(String(id), reviewData);

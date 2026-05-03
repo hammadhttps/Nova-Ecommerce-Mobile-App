@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,20 +11,43 @@ import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "@/hooks/useTheme";
 import { Avatar } from "@/components/common";
 import { useAuthStore } from "@/store/auth.store";
+import { useWishlist } from "@/hooks/useWishlist";
 import { authService } from "@/services/auth.service";
+import { orderService } from "@/services/order.service";
+import { productService } from "@/services/product.service";
 import { Plus, Package, Camera } from "lucide-react-native";
 
 export default React.memo(function OverviewTab({ navigation }: any) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { user, updateUser } = useAuthStore();
+  const { wishlistCount } = useWishlist();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [orderCount, setOrderCount] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
 
-  // TODO: Fetch real stats from Firestore
+  const fetchStats = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const [orders, reviews] = await Promise.all([
+        orderService.getOrders(user.id),
+        productService.getUserReviews(user.id),
+      ]);
+      setOrderCount(orders.length);
+      setReviewCount(reviews.length);
+    } catch (error) {
+      console.error("Failed to fetch profile stats:", error);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   const stats = [
-    { label: "Orders", value: 0 },
-    { label: "Wishlist", value: 0 },
-    { label: "Reviews", value: 0 },
+    { label: "Orders", value: orderCount },
+    { label: "Wishlist", value: wishlistCount },
+    { label: "Reviews", value: reviewCount },
   ];
 
   const handlePhotoUpload = async () => {

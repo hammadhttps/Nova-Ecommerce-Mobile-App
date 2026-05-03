@@ -106,11 +106,11 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   row: {
-    justifyContent: "space-between",
+    gap: 12,
     marginBottom: 12,
   },
   cardWrapper: {
-    width: "48%",
+    flex: 1,
   },
 });
 

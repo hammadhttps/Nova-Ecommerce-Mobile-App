@@ -192,18 +192,18 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   content: {
-    padding: 12,
+    padding: 14,
   },
   name: {
     fontSize: 14,
     fontWeight: "500",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   rating: {
     fontSize: 12,

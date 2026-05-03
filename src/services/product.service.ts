@@ -2,6 +2,7 @@ import { Product, Category, Review } from "@/types";
 import { db } from "../../Firebaseconfig";
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -167,5 +168,16 @@ export const productService = {
     const newReview = { ...review, id: newId };
     await setDoc(doc(db, "products", productId, "reviews", newId), newReview);
     return newReview;
+  },
+
+  async getUserReviews(userId: string): Promise<Review[]> {
+    const q = query(
+      collectionGroup(db, "reviews"),
+      where("userId", "==", userId),
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as Review,
+    );
   },
 };

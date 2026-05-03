@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700" },
   count: { fontSize: 14, marginTop: 4 },
   listContent: { paddingHorizontal: 12, paddingBottom: 24 },
-  row: { justifyContent: "space-between", marginBottom: 12 },
-  cardWrapper: { width: "48%" },
+  row: { gap: 12, marginBottom: 12 },
+  cardWrapper: { flex: 1 },
   empty: { flex: 1, alignItems: "center", justifyContent: "center" },
   emptyText: { fontSize: 16 },
 });

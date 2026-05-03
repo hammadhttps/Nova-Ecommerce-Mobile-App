@@ -96,4 +96,5 @@ export interface Review {
   rating: number;
   date: string;
   comment: string;
+  userId?: string;
 }
