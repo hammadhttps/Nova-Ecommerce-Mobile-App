@@ -7,7 +7,8 @@ import { MapPin, Trash2, ChevronLeft, Edit2 } from 'lucide-react-native';
 import { mockAddresses } from '@/services/mocks/addresses';
 
 export default function AddressManagementScreen({ navigation }: any) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const renderItem = ({ item }: { item: typeof mockAddresses[0] }) => (
     <View style={[styles.card, { backgroundColor: isDark ? '#1a1a1a' : '#ffffff' }]}>
