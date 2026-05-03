@@ -17,7 +17,7 @@ const routes: TabRoute[] = [
 ];
 
 export default function ProfileScreen({ navigation }: { navigation: any }) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { logout } = useAuthStore();
 
@@ -34,6 +34,7 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
     (label: string) => {
       const screenMap: Record<string, keyof any> = {
         Notifications: "Notifications",
+        Addresses: "AddressManagement",
         "Privacy & Security": "Settings",
         About: "Help",
       };
