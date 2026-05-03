@@ -17,7 +17,8 @@ interface CategoriesTabProps {
 export default React.memo(function CategoriesTab({
   onCategoryPress,
 }: CategoriesTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
     ({ item }: { item: Category }) => (
