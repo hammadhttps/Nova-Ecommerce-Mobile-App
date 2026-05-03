@@ -29,7 +29,8 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   ...props
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const containerStyles: Record<string, ViewStyle> = {
     primary: {

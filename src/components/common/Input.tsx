@@ -29,7 +29,8 @@ export const Input: React.FC<InputProps> = ({
   rightIcon,
   ...props
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 

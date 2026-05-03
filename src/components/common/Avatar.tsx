@@ -17,7 +17,8 @@ export const Avatar: React.FC<AvatarProps> = ({
   source,
   style,
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [hasError, setHasError] = React.useState(false);
 
   const imageUri = source?.uri || uri;
