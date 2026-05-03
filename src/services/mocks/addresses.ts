@@ -2,7 +2,7 @@ import { Address } from "@/types";
 
 export const mockAddresses: Address[] = [
   {
-    id: 1,
+    id: "1",
     name: "Home",
     street: "123 Main Street, Apt 4B",
     city: "New York, NY 10001",
@@ -11,7 +11,7 @@ export const mockAddresses: Address[] = [
     isDefault: true,
   },
   {
-    id: 2,
+    id: "2",
     name: "Office",
     street: "456 Business Ave, Floor 12",
     city: "New York, NY 10002",
@@ -19,7 +19,7 @@ export const mockAddresses: Address[] = [
     isDefault: false,
   },
   {
-    id: 3,
+    id: "3",
     name: "Parents House",
     street: "789 Family Road",
     city: "Brooklyn, NY 11201",
