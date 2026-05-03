@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -38,63 +38,66 @@ export default function CategoriesScreen({ navigation }: any) {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const renderCategory = ({ item }: { item: Category }) => {
-    const isExpanded = expandedId === item.id;
+  const renderCategory = useCallback(
+    ({ item }: { item: Category }) => {
+      const isExpanded = expandedId === item.id;
 
-    return (
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
-        ]}
-      >
-        <TouchableOpacity
-          style={styles.cardHeader}
-          onPress={() => toggleExpand(item.id)}
-          activeOpacity={0.7}
+      return (
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+          ]}
         >
-          <View style={styles.left}>
-            <Text style={styles.icon}>{item.icon}</Text>
-            <Text
-              style={[styles.name, { color: isDark ? "#fafafa" : "#030213" }]}
-            >
-              {item.name}
-            </Text>
-          </View>
-          {isExpanded ? (
-            <ChevronUp size={20} color={isDark ? "#fafafa" : "#030213"} />
-          ) : (
-            <ChevronDown size={20} color={isDark ? "#fafafa" : "#030213"} />
-          )}
-        </TouchableOpacity>
-
-        {isExpanded && (
-          <View style={styles.subs}>
-            {item.subcategories.map((sub, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={[
-                  styles.subItem,
-                  { borderBottomColor: isDark ? "#262626" : "#ececf0" },
-                ]}
-                onPress={() => navigation.navigate("Search")}
-                activeOpacity={0.7}
+          <TouchableOpacity
+            style={styles.cardHeader}
+            onPress={() => toggleExpand(item.id)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.left}>
+              <Text style={styles.icon}>{item.icon}</Text>
+              <Text
+                style={[styles.name, { color: isDark ? "#fafafa" : "#030213" }]}
               >
-                <Text
+                {item.name}
+              </Text>
+            </View>
+            {isExpanded ? (
+              <ChevronUp size={20} color={isDark ? "#fafafa" : "#030213"} />
+            ) : (
+              <ChevronDown size={20} color={isDark ? "#fafafa" : "#030213"} />
+            )}
+          </TouchableOpacity>
+
+          {isExpanded && (
+            <View style={styles.subs}>
+              {item.subcategories.map((sub, idx) => (
+                <TouchableOpacity
+                  key={idx}
                   style={[
-                    styles.subText,
-                    { color: isDark ? "#a3a3a3" : "#737373" },
+                    styles.subItem,
+                    { borderBottomColor: isDark ? "#262626" : "#ececf0" },
                   ]}
+                  onPress={() => navigation.navigate("Search")}
+                  activeOpacity={0.7}
                 >
-                  {sub}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-    );
-  };
+                  <Text
+                    style={[
+                      styles.subText,
+                      { color: isDark ? "#a3a3a3" : "#737373" },
+                    ]}
+                  >
+                    {sub}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      );
+    },
+    [isDark, expandedId, navigation],
+  );
 
   if (loading) {
     return (
@@ -127,6 +130,9 @@ export default function CategoriesScreen({ navigation }: any) {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          removeClippedSubviews
         />
       </View>
     </SafeScreen>
