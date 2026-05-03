@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { Product } from '@/types';
-import { MAX_COMPARISON_PRODUCTS } from '@/utils/constants';
+import { create } from "zustand";
+import { Product } from "@/types";
+import { MAX_COMPARISON_PRODUCTS } from "@/utils/constants";
 
 interface ComparisonState {
   comparisonMode: boolean;
@@ -9,7 +9,7 @@ interface ComparisonState {
 
   toggleComparisonMode: () => void;
   addToComparison: (product: Product) => void;
-  removeFromComparison: (productId: number) => void;
+  removeFromComparison: (productId: string) => void;
   clearComparison: () => void;
   toggleShowComparison: () => void;
 }
@@ -36,9 +36,11 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
       return { selectedProducts: [...state.selectedProducts, product] };
     }),
 
-  removeFromComparison: (productId: number) =>
+  removeFromComparison: (productId: string) =>
     set((state) => ({
-      selectedProducts: state.selectedProducts.filter((p) => p.id !== productId),
+      selectedProducts: state.selectedProducts.filter(
+        (p) => p.id !== productId,
+      ),
     })),
 
   clearComparison: () => set({ selectedProducts: [] }),

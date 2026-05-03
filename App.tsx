@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Toast from 'react-native-toast-message';
-import RootNavigator from '@/navigation/RootNavigator';
-import { ErrorBoundary } from '@/components/common';
-import { useAuthStore } from '@/store/auth.store';
-import { useThemeStore } from '@/store/theme.store';
-import { useCartStore } from '@/store/cart.store';
-import { useWishlistStore } from '@/store/wishlist.store';
-import { LoadingScreen } from '@/components/common';
+import React, { useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { NavigationContainer } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Toast from "react-native-toast-message";
+import RootNavigator from "@/navigation/RootNavigator";
+import { ErrorBoundary } from "@/components/common";
+import { useAuthStore } from "@/store/auth.store";
+import { useThemeStore } from "@/store/theme.store";
+import { useCartStore } from "@/store/cart.store";
+import { useWishlistStore } from "@/store/wishlist.store";
+import { LoadingScreen } from "@/components/common";
 
 const AppContent: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
@@ -22,14 +22,8 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
-      await Promise.all([
-        initializeAuth(),
-        initializeTheme(),
-      ]);
-      await Promise.all([
-        fetchCart(),
-        fetchWishlist(),
-      ]);
+      await Promise.all([initializeAuth(), initializeTheme()]);
+      await Promise.all([fetchCart(), fetchWishlist()]);
       setIsReady(true);
     };
     init();
@@ -45,7 +39,7 @@ const AppContent: React.FC = () => {
         <ErrorBoundary>
           <NavigationContainer>
             <StatusBar
-              style={resolvedTheme === 'dark' ? 'light' : 'dark'}
+              style={resolvedTheme === "dark" ? "light" : "dark"}
               backgroundColor="transparent"
               translucent
             />
