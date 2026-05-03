@@ -1,20 +1,26 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Search } from "lucide-react-native";
+import { SceneMap } from "react-native-tab-view";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { Skeleton } from "@/components/common";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
-import TopTabsNavigator from "@/navigation/TopTabsNavigator";
-import {
-  flashSaleProducts,
-  forYouProducts,
-  recentProducts,
-} from "@/services/mocks/products";
+import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
+import FlashSaleScreen from "@/features/home/FlashSaleScreen";
+import ForYouScreen from "@/features/home/ForYouScreen";
+import RecentScreen from "@/features/home/RecentScreen";
+import { Product } from "@/types";
 
 interface HomeScreenProps {
   navigation: any;
 }
+
+const routes: TabRoute[] = [
+  { key: "flashSale", title: "Flash Sale", icon: "🔥" },
+  { key: "forYou", title: "For You", icon: "⭐" },
+  { key: "recent", title: "Recent", icon: "🕐" },
+];
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { isDark } = useTheme();
@@ -30,11 +36,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   }, []);
 
   const handleProductPress = useCallback(
-    (product: { id: number }) => {
+    (product: Product) => {
       navigation.navigate("ProductDetail", { id: product.id });
     },
     [navigation],
   );
+
+  const renderScene = SceneMap({
+    flashSale: () => <FlashSaleScreen onProductPress={handleProductPress} />,
+    forYou: () => <ForYouScreen onProductPress={handleProductPress} />,
+    recent: () => <RecentScreen onProductPress={handleProductPress} />,
+  });
 
   if (loading) {
     return (
@@ -52,9 +64,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       </SafeScreen>
     );
   }
-
-  const totalItems =
-    flashSaleProducts.length + forYouProducts.length + recentProducts.length;
 
   return (
     <SafeScreen>
@@ -113,26 +122,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
 
-        <View style={styles.badgeRow}>
-          <View
-            style={[
-              styles.badge,
-              { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
-            ]}
-          >
-            <Text
-              style={[
-                styles.badgeLabel,
-                { color: isDark ? "#a3a3a3" : "#737373" },
-              ]}
-            >
-              {totalItems} items
-            </Text>
-          </View>
-        </View>
-
         <View style={styles.tabsContainer}>
-          <TopTabsNavigator navigation={navigation} />
+          <TopTabsNavigator routes={routes} renderScene={renderScene} />
         </View>
       </View>
     </SafeScreen>
@@ -178,23 +169,9 @@ const styles = StyleSheet.create({
   searchPlaceholder: {
     fontSize: 16,
   },
-  badgeRow: {
-    paddingHorizontal: 16,
-    marginTop: 12,
-  },
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  badgeLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
   tabsContainer: {
     flex: 1,
-    marginTop: 8,
+    marginTop: 16,
   },
 });
 

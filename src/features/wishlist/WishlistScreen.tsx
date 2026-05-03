@@ -1,89 +1,59 @@
-import React from "react";
-import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-} from "react-native";
+import React, { useCallback } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
-import { Button } from "@/components/common/Button";
-import { Badge } from "@/components/common/Badge";
-import { EmptyState } from "@/components/common/EmptyState";
-import { X } from "lucide-react-native";
-import { WishlistItem } from "@/types";
-import {
-  CompositeNavigationProp,
-  NavigationProp,
-} from "@react-navigation/native";
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { MainTabParamList, RootStackParamList } from "@/navigation/types";
+import { EmptyState } from "@/components/common";
+import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
+import WishlistItemsTab from "@/features/wishlist/WishlistItemsTab";
+import PriceDropsTab from "@/features/wishlist/PriceDropsTab";
+import BackInStockTab from "@/features/wishlist/BackInStockTab";
+import { WishlistItem, Product } from "@/types";
+import { SceneMap } from "react-native-tab-view";
 
-type WishlistScreenNavProp = CompositeNavigationProp<
-  BottomTabNavigationProp<MainTabParamList, "Wishlist">,
-  NavigationProp<RootStackParamList>
->;
+const routes: TabRoute[] = [
+  { key: "wishlist", title: "Wishlist" },
+  { key: "drops", title: "Price Drops" },
+  { key: "backInStock", title: "Back In Stock" },
+];
 
-interface Props {
-  navigation: WishlistScreenNavProp;
-}
-
-export default function WishlistScreen({ navigation }: Props) {
+export default function WishlistScreen({ navigation }: { navigation: any }) {
   const { isDark } = useTheme();
   const { wishlistItems, removeFromWishlist, wishlistLoading } = useWishlist();
   const { addToCart } = useCart();
 
-  const handleAddToCart = (item: WishlistItem) => {
-    addToCart(item);
-  };
-
-  const handleRemove = (id: number) => {
-    removeFromWishlist(id);
-  };
-
-  const renderItem = ({ item }: { item: WishlistItem }) => (
-    <View
-      style={[styles.card, { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" }]}
-    >
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <View style={styles.info}>
-        <Text
-          style={[styles.name, { color: isDark ? "#fafafa" : "#030213" }]}
-          numberOfLines={2}
-        >
-          {item.name}
-        </Text>
-        <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-        <View style={styles.row}>
-          {item.inStock ? (
-            <Badge label="In Stock" variant="success" size="sm" />
-          ) : (
-            <Badge label="Out of Stock" variant="destructive" size="sm" />
-          )}
-          <TouchableOpacity
-            style={styles.removeBtn}
-            onPress={() => handleRemove(item.id)}
-            activeOpacity={0.7}
-          >
-            <X size={20} color="#ef4444" />
-          </TouchableOpacity>
-        </View>
-        {item.inStock && (
-          <Button
-            onPress={() => handleAddToCart(item)}
-            size="sm"
-            style={styles.cartBtn}
-          >
-            Add to Cart
-          </Button>
-        )}
-      </View>
-    </View>
+  const handleProductPress = useCallback(
+    (item: WishlistItem | Product) => {
+      navigation.navigate("ProductDetail", { id: item.id });
+    },
+    [navigation],
   );
+
+  const handleRemove = useCallback(
+    (id: number) => {
+      removeFromWishlist(id);
+    },
+    [removeFromWishlist],
+  );
+
+  const handleAddToCart = useCallback(
+    (item: Product) => {
+      addToCart(item, 1);
+    },
+    [addToCart],
+  );
+
+  const renderScene = SceneMap({
+    wishlist: () => (
+      <WishlistItemsTab
+        onRemove={handleRemove}
+        onProductPress={handleProductPress}
+      />
+    ),
+    drops: () => <PriceDropsTab onProductPress={handleProductPress} />,
+    backInStock: () => <BackInStockTab onProductPress={handleProductPress} />,
+  });
 
   if (wishlistLoading) {
     return <SafeScreen loading />;
@@ -135,13 +105,7 @@ export default function WishlistScreen({ navigation }: Props) {
             {wishlistItems.length} items
           </Text>
         </View>
-        <FlatList
-          data={wishlistItems}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+        <TopTabsNavigator routes={routes} renderScene={renderScene} />
       </View>
     </SafeScreen>
   );
@@ -152,28 +116,4 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 16 },
   title: { fontSize: 28, fontWeight: "700" },
   subtitle: { fontSize: 14, marginTop: 4 },
-  listContent: { paddingHorizontal: 20, paddingBottom: 20 },
-  card: {
-    flexDirection: "row",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  image: { width: 80, height: 80, borderRadius: 8 },
-  info: { flex: 1, marginLeft: 12, justifyContent: "space-between" },
-  name: { fontSize: 14, fontWeight: "600" },
-  price: { fontSize: 16, fontWeight: "700", color: "#9333ea" },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 4,
-  },
-  removeBtn: { padding: 4 },
-  cartBtn: { alignSelf: "flex-start", marginTop: 8 },
 });

@@ -1,55 +1,27 @@
-import React, { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-} from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { useTheme } from "@/hooks/useTheme";
-import FlashSaleScreen from "@/features/home/FlashSaleScreen";
-import ForYouScreen from "@/features/home/ForYouScreen";
-import RecentScreen from "@/features/home/RecentScreen";
-import { Product } from "@/types";
 
-interface TopTabsNavigatorProps {
-  navigation: any;
+export type TabRoute = {
+  key: string;
+  title: string;
+  icon?: string;
+};
+
+export interface TopTabsNavigatorProps {
+  routes: TabRoute[];
+  renderScene: ReturnType<typeof SceneMap>;
 }
 
 const windowWidth = Dimensions.get("window").width;
 
-type Route = {
-  key: string;
-  title: string;
-  icon: string;
-};
-
-const routes: Route[] = [
-  { key: "flashSale", title: "Flash Sale", icon: "🔥" },
-  { key: "forYou", title: "For You", icon: "⭐" },
-  { key: "recent", title: "Recent", icon: "🕐" },
-];
-
 export default function TopTabsNavigator({
-  navigation,
+  routes,
+  renderScene,
 }: TopTabsNavigatorProps) {
   const { isDark } = useTheme();
   const [index, setIndex] = useState(0);
-
-  const handleProductPress = useCallback(
-    (product: Product) => {
-      navigation.navigate("ProductDetail", { id: product.id });
-    },
-    [navigation],
-  );
-
-  const renderScene = SceneMap({
-    flashSale: () => <FlashSaleScreen onProductPress={handleProductPress} />,
-    forYou: () => <ForYouScreen onProductPress={handleProductPress} />,
-    recent: () => <RecentScreen onProductPress={handleProductPress} />,
-  });
 
   const renderTabBar = useCallback(
     (props: any) => (
@@ -74,12 +46,12 @@ export default function TopTabsNavigator({
           focused,
           color,
         }: {
-          route: Route;
+          route: TabRoute;
           focused: boolean;
           color: string;
         }) => (
           <View style={styles.labelContainer}>
-            <Text style={styles.tabIcon}>{r.icon}</Text>
+            {r.icon && <Text style={styles.tabIcon}>{r.icon}</Text>}
             <Text
               style={[
                 styles.tabLabel,
