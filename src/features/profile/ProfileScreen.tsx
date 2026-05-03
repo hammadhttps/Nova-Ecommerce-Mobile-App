@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth.store";
-import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
+import TabViewPager, { TabRoute } from "@/navigation/TabViewPager";
 import OverviewTab from "@/features/profile/OverviewTab";
 import OrdersTab from "@/features/profile/OrdersTab";
 import SettingsTab from "@/features/profile/SettingsTab";
@@ -64,7 +64,7 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
           { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
         ]}
       >
-        <TopTabsNavigator routes={routes} renderScene={renderScene} />
+        <TabViewPager routes={routes} renderScene={renderScene} />
       </View>
     </SafeScreen>
   );

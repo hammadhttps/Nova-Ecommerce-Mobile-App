@@ -4,7 +4,7 @@ import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
 import { Button, Input, EmptyState } from "@/components/common";
-import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
+import TabViewPager, { TabRoute } from "@/navigation/TabViewPager";
 import InCartTab from "@/features/cart/InCartTab";
 import SavedForLaterTab from "@/features/cart/SavedForLaterTab";
 import { CartItem, Product } from "@/types";
@@ -118,7 +118,7 @@ export default function CartScreen({ navigation }: { navigation: any }) {
         </View>
 
         <View style={styles.tabsWrapper}>
-          <TopTabsNavigator routes={routes} renderScene={renderScene} />
+          <TabViewPager routes={routes} renderScene={renderScene} />
         </View>
 
         <View

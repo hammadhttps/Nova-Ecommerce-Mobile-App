@@ -1,26 +1,15 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Search } from "lucide-react-native";
-import { SceneMap } from "react-native-tab-view";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { Skeleton } from "@/components/common";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
-import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
-import FlashSaleScreen from "@/features/home/FlashSaleScreen";
-import ForYouScreen from "@/features/home/ForYouScreen";
-import RecentScreen from "@/features/home/RecentScreen";
-import { Product } from "@/types";
+import TopTabsNavigator from "@/navigation/TopTabsNavigator";
 
 interface HomeScreenProps {
-  navigation: any;
+  navigation: { navigate: (name: string) => void };
 }
-
-const routes: TabRoute[] = [
-  { key: "flashSale", title: "Flash Sale", icon: "🔥" },
-  { key: "forYou", title: "For You", icon: "⭐" },
-  { key: "recent", title: "Recent", icon: "🕐" },
-];
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { isDark } = useTheme();
@@ -33,20 +22,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       setTimeout(() => setLoading(false), 800);
     };
     init();
-  }, []);
-
-  const handleProductPress = useCallback(
-    (product: Product) => {
-      navigation.navigate("ProductDetail", { id: product.id });
-    },
-    [navigation],
-  );
-
-  const renderScene = SceneMap({
-    flashSale: () => <FlashSaleScreen onProductPress={handleProductPress} />,
-    forYou: () => <ForYouScreen onProductPress={handleProductPress} />,
-    recent: () => <RecentScreen onProductPress={handleProductPress} />,
-  });
+  }, [fetchCart]);
 
   if (loading) {
     return (
@@ -123,7 +99,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </TouchableOpacity>
 
         <View style={styles.tabsContainer}>
-          <TopTabsNavigator routes={routes} renderScene={renderScene} />
+          <TopTabsNavigator />
         </View>
       </View>
     </SafeScreen>

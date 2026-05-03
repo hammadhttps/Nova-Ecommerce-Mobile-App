@@ -27,3 +27,10 @@ export type MainTabParamList = {
   Wishlist: undefined;
   Profile: undefined;
 };
+
+/** Top tabs nested inside the Home main tab (route Feed shows label "Home"; avoids duplicate "Home" with main tabs) */
+export type HomeTopTabParamList = {
+  Feed: undefined;
+  Listings: undefined;
+  HomeProfile: undefined;
+};
