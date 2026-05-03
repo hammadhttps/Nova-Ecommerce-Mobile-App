@@ -1,6 +1,6 @@
-import { Notification } from '@/types';
-import { mockNotifications } from '@/services/mocks/notifications';
-import { delay } from '@/utils/delay';
+import { Notification } from "@/types";
+import { mockNotifications } from "@/services/mocks/notifications";
+import { delay } from "@/utils/delay";
 
 let notificationsState: Notification[] = [...mockNotifications];
 
@@ -10,10 +10,10 @@ export const notificationService = {
     return notificationsState;
   },
 
-  async markAsRead(id: number): Promise<Notification[]> {
+  async markAsRead(id: string): Promise<Notification[]> {
     await delay(200);
     notificationsState = notificationsState.map((n) =>
-      n.id === id ? { ...n, read: true } : n
+      n.id === id ? { ...n, read: true } : n,
     );
     return notificationsState;
   },
@@ -24,7 +24,7 @@ export const notificationService = {
     return notificationsState;
   },
 
-  async deleteNotification(id: number): Promise<Notification[]> {
+  async deleteNotification(id: string): Promise<Notification[]> {
     await delay(200);
     notificationsState = notificationsState.filter((n) => n.id !== id);
     return notificationsState;

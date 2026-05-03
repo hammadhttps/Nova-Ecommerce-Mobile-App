@@ -7,7 +7,8 @@ import { CreditCard, Trash2, ChevronLeft } from 'lucide-react-native';
 import { mockPaymentMethods } from '@/services/mocks/payments';
 
 export default function PaymentMethodsScreen({ navigation }: any) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const gradients: Record<string, [string, string]> = {
     visa: ['#1a237e', '#283593'],

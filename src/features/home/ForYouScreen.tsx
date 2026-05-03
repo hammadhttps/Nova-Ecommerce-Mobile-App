@@ -1,8 +1,8 @@
-import React from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, StyleSheet, FlatList, ActivityIndicator } from "react-native";
 import { ProductCard } from "@/components/ProductCard";
 import { useTheme } from "@/hooks/useTheme";
-import { forYouProducts } from "@/services/mocks/products";
+import { productService } from "@/services/product.service";
 import { Product } from "@/types";
 
 interface ForYouScreenProps {
@@ -11,14 +11,47 @@ interface ForYouScreenProps {
 
 const ForYouScreen: React.FC<ForYouScreenProps> = React.memo(
   ({ onProductPress }) => {
-    const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark";
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const renderItem = ({ item }: { item: Product }) => (
-      <View style={styles.cardWrapper}>
-        <ProductCard product={item} onPress={() => onProductPress(item)} />
-      </View>
+    useEffect(() => {
+      const loadProducts = async () => {
+        try {
+          const forYou = await productService.getForYouProducts();
+          setProducts(forYou);
+        } catch (error) {
+          console.error("Failed to load For You products:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadProducts();
+    }, []);
+
+    const renderItem = useCallback(
+      ({ item }: { item: Product }) => (
+        <View style={styles.cardWrapper}>
+          <ProductCard product={item} onPress={() => onProductPress(item)} />
+        </View>
+      ),
+      [onProductPress],
     );
+
+    if (loading) {
+      return (
+        <View
+          style={[
+            styles.container,
+            styles.center,
+            { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
+          ]}
+        >
+          <ActivityIndicator size="large" color="#9333ea" />
+        </View>
+      );
+    }
 
     return (
       <View
@@ -28,7 +61,7 @@ const ForYouScreen: React.FC<ForYouScreenProps> = React.memo(
         ]}
       >
         <FlatList
-          data={forYouProducts}
+          data={products}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
@@ -47,6 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  center: { alignItems: "center", justifyContent: "center" },
   listContent: {
     paddingHorizontal: 20,
     paddingTop: 12,

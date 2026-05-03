@@ -1,5 +1,5 @@
-import { PaymentMethod } from '@/types';
-import { mockPaymentMethods } from '@/services/mocks/payments';
+import { PaymentMethod } from "@/types";
+import { mockPaymentMethods } from "@/services/mocks/payments";
 
 let paymentMethodsState: PaymentMethod[] = [...mockPaymentMethods];
 
@@ -9,29 +9,34 @@ export const paymentService = {
     return paymentMethodsState;
   },
 
-  async addPaymentMethod(method: Omit<PaymentMethod, 'id'>): Promise<PaymentMethod[]> {
+  async addPaymentMethod(
+    method: Omit<PaymentMethod, "id">,
+  ): Promise<PaymentMethod[]> {
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     const newMethod: PaymentMethod = {
       ...method,
-      id: Date.now(),
+      id: Date.now().toString(),
     };
 
     if (method.isDefault) {
-      paymentMethodsState = paymentMethodsState.map((m) => ({ ...m, isDefault: false }));
+      paymentMethodsState = paymentMethodsState.map((m) => ({
+        ...m,
+        isDefault: false,
+      }));
     }
 
     paymentMethodsState = [...paymentMethodsState, newMethod];
     return paymentMethodsState;
   },
 
-  async removePaymentMethod(id: number): Promise<PaymentMethod[]> {
+  async removePaymentMethod(id: string): Promise<PaymentMethod[]> {
     await new Promise((resolve) => setTimeout(resolve, 300));
     paymentMethodsState = paymentMethodsState.filter((m) => m.id !== id);
     return paymentMethodsState;
   },
 
-  async setDefaultPaymentMethod(id: number): Promise<PaymentMethod[]> {
+  async setDefaultPaymentMethod(id: string): Promise<PaymentMethod[]> {
     await new Promise((resolve) => setTimeout(resolve, 200));
     paymentMethodsState = paymentMethodsState.map((m) => ({
       ...m,

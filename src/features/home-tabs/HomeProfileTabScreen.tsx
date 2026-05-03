@@ -1,23 +1,19 @@
 import React, { useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronRight, User } from "lucide-react-native";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth.store";
 import { Avatar } from "@/components/common";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const HomeProfileTabScreen: React.FC = React.memo(
   function HomeProfileTabScreen() {
-    const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark";
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
     const navigation = useNavigation();
     const { user } = useAuthStore();
+    const insets = useSafeAreaInsets();
 
     const openMainProfile = useCallback(() => {
       navigation.navigate("Profile" as never);
@@ -27,12 +23,17 @@ const HomeProfileTabScreen: React.FC = React.memo(
     const email = user?.email ?? "alex@email.com";
 
     return (
-      <SafeAreaView
+      <View
         style={[
           styles.safe,
-          { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
+          {
+            backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5",
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+          },
         ]}
-        edges={["left", "right", "bottom"]}
       >
         <View
           style={[
@@ -62,10 +63,7 @@ const HomeProfileTabScreen: React.FC = React.memo(
           activeOpacity={0.7}
         >
           <View style={styles.rowLeft}>
-            <User
-              size={22}
-              color={isDark ? "#fafafa" : "#111827"}
-            />
+            <User size={22} color={isDark ? "#fafafa" : "#111827"} />
             <Text
               style={[
                 styles.rowLabel,
@@ -75,12 +73,9 @@ const HomeProfileTabScreen: React.FC = React.memo(
               Full profile & settings
             </Text>
           </View>
-          <ChevronRight
-            size={22}
-            color={isDark ? "#737373" : "#a3a3a3"}
-          />
+          <ChevronRight size={22} color={isDark ? "#737373" : "#a3a3a3"} />
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     );
   },
 );

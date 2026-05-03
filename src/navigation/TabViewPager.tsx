@@ -18,7 +18,8 @@ const windowWidth = Dimensions.get("window").width;
 
 /** Generic swipeable tabs (Cart, Search, Profile, Wishlist). Home uses TopTabsNavigator. */
 export default function TabViewPager({ routes, renderScene }: TabViewPagerProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [index, setIndex] = useState(0);
 
   const renderTabBar = useCallback(
@@ -29,7 +30,10 @@ export default function TabViewPager({ routes, renderScene }: TabViewPagerProps)
         indicatorStyle={[styles.indicator, { backgroundColor: "#4F46E5" }]}
         style={[
           styles.tabBar,
-          { backgroundColor: isDark ? "#0f0f0f" : "#ffffff" },
+          {
+            backgroundColor: isDark ? "#0f0f0f" : "#ffffff",
+            borderBottomColor: isDark ? "#2a2a2a" : "rgba(0,0,0,0.06)",
+          },
         ]}
         tabStyle={styles.tabStyle}
         labelStyle={[
@@ -89,8 +93,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 3,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.05)",
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   indicator: {
     height: 3,

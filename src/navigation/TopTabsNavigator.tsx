@@ -18,7 +18,8 @@ const TAB_ACCENT = {
  * Swipeable top tabs inside Home (React Navigation material tabs + pager).
  */
 const TopTabsNavigator: React.FC = () => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const screenOptions = useMemo(
     () => ({

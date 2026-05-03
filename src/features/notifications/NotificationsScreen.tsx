@@ -6,7 +6,8 @@ import { ShoppingBag, Truck, Tag, Gift, ChevronLeft, CheckCheck } from 'lucide-r
 import { mockNotifications } from '@/services/mocks/notifications';
 
 export default function NotificationsScreen({ navigation }: any) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const [notifications, setNotifications] = useState(mockNotifications);
 
   const getIcon = (type: string) => {

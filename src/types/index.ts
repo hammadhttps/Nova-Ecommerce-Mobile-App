@@ -1,5 +1,5 @@
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -13,10 +13,12 @@ export interface Product {
   specs?: Record<string, string>;
   description?: string;
   category?: string;
+  sellerId?: string;
+  stock?: number;
 }
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   icon: string;
   color: string;
@@ -40,7 +42,7 @@ export interface User {
 }
 
 export interface Address {
-  id: number;
+  id: string;
   name: string;
   street: string;
   city: string;
@@ -50,7 +52,7 @@ export interface Address {
 }
 
 export interface PaymentMethod {
-  id: number;
+  id: string;
   type: "visa" | "mastercard" | "amex";
   number: string;
   expiry: string;
@@ -71,23 +73,24 @@ export interface Order {
     quantity: number;
     image: string;
     price: number;
+    productId?: string;
   }>;
   address?: Address;
   paymentMethod?: PaymentMethod;
 }
 
 export interface Notification {
-  id: number;
+  id: string;
   type: "order" | "offer" | "success" | "price_drop" | "delivery";
   title: string;
   message: string;
   time: string;
   read: boolean;
-  productId?: number;
+  productId?: string;
 }
 
 export interface Review {
-  id: number;
+  id: string;
   user: string;
   avatar: string;
   rating: number;
