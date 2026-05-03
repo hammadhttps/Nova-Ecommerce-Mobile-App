@@ -14,6 +14,7 @@ import NotificationsScreen from "@/features/notifications/NotificationsScreen";
 import HelpScreen from "@/features/help/HelpScreen";
 import SettingsScreen from "@/features/settings/SettingsScreen";
 import SellProductScreen from "@/features/sell/SellProductScreen";
+import MyProductsScreen from "@/features/sell/MyProductsScreen";
 import { RootStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -68,9 +69,20 @@ const RootNavigator: React.FC = () => {
           <Stack.Screen
             name="SellProduct"
             component={SellProductScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as any)?.productId
+                ? "Edit Product"
+                : "Sell Product",
+              headerBackTitle: "Back",
+            })}
+          />
+          <Stack.Screen
+            name="MyProducts"
+            component={MyProductsScreen}
             options={{
               headerShown: true,
-              title: "Sell Product",
+              title: "My Products",
               headerBackTitle: "Back",
             }}
           />
