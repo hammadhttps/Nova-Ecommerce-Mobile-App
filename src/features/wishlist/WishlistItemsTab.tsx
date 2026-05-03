@@ -22,7 +22,7 @@ export default React.memo(function WishlistItemsTab({
   onRemove,
   onProductPress,
 }: WishlistItemsTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { wishlistItems } = useWishlist();
 
@@ -98,6 +98,9 @@ export default React.memo(function WishlistItemsTab({
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
       />
     </View>
   );
