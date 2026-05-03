@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -38,35 +38,38 @@ const RecentScreen: React.FC<RecentScreenProps> = React.memo(
       loadProducts();
     }, []);
 
-    const renderItem = ({ item }: { item: Product }) => (
-      <TouchableOpacity
-        style={[
-          styles.recentItem,
-          { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
-        ]}
-        onPress={() => onProductPress(item)}
-        activeOpacity={0.7}
-      >
-        <View
+    const renderItem = useCallback(
+      ({ item }: { item: Product }) => (
+        <TouchableOpacity
           style={[
-            styles.recentImage,
-            { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
+            styles.recentItem,
+            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
           ]}
-        />
-        <View style={styles.recentInfo}>
-          <Text
+          onPress={() => onProductPress(item)}
+          activeOpacity={0.7}
+        >
+          <View
             style={[
-              styles.recentName,
-              { color: isDark ? "#fafafa" : "#030213" },
+              styles.recentImage,
+              { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
             ]}
-            numberOfLines={1}
-          >
-            {item.name}
-          </Text>
-          <Text style={styles.recentPrice}>{formatCurrency(item.price)}</Text>
-        </View>
-        <ChevronRight size={20} color={isDark ? "#737373" : "#a3a3a3"} />
-      </TouchableOpacity>
+          />
+          <View style={styles.recentInfo}>
+            <Text
+              style={[
+                styles.recentName,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+              numberOfLines={1}
+            >
+              {item.name}
+            </Text>
+            <Text style={styles.recentPrice}>{formatCurrency(item.price)}</Text>
+          </View>
+          <ChevronRight size={20} color={isDark ? "#737373" : "#a3a3a3"} />
+        </TouchableOpacity>
+      ),
+      [isDark, onProductPress],
     );
 
     if (loading) {
@@ -85,6 +88,9 @@ const RecentScreen: React.FC<RecentScreenProps> = React.memo(
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          removeClippedSubviews
         />
       </View>
     );

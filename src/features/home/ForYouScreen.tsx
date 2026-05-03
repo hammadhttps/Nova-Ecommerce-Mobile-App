@@ -68,6 +68,9 @@ const ForYouScreen: React.FC<ForYouScreenProps> = React.memo(
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          removeClippedSubviews
         />
       </View>
     );
