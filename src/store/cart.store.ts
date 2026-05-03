@@ -45,8 +45,13 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   addToCart: async (product: Product, quantity = 1) => {
-    const userId = useAuthStore.getState().user?.id;
+    const currentUser = useAuthStore.getState().user;
+    const userId = currentUser?.id;
     if (!userId) return;
+
+    if (product.sellerId === userId) {
+      throw new Error("You cannot purchase your own product");
+    }
 
     const items = await cartService.addToCart(userId, product, quantity);
     set({ items });
