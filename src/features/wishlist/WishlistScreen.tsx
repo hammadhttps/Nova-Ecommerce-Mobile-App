@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
 import { EmptyState } from "@/components/common";
-import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
+import TabViewPager, { TabRoute } from "@/navigation/TabViewPager";
 import WishlistItemsTab from "@/features/wishlist/WishlistItemsTab";
 import PriceDropsTab from "@/features/wishlist/PriceDropsTab";
 import BackInStockTab from "@/features/wishlist/BackInStockTab";
@@ -105,7 +105,7 @@ export default function WishlistScreen({ navigation }: { navigation: any }) {
             {wishlistItems.length} items
           </Text>
         </View>
-        <TopTabsNavigator routes={routes} renderScene={renderScene} />
+        <TabViewPager routes={routes} renderScene={renderScene} />
       </View>
     </SafeScreen>
   );

@@ -1,81 +1,55 @@
-import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Home, Search, Heart, ShoppingCart, User } from "lucide-react-native";
+import React, { useMemo } from "react";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import HomeScreen from "@/features/home/HomeScreen";
 import SearchScreen from "@/features/search/SearchScreen";
 import WishlistScreen from "@/features/wishlist/WishlistScreen";
 import CartScreen from "@/features/cart/CartScreen";
 import ProfileScreen from "@/features/profile/ProfileScreen";
-import { useTheme } from "@/hooks/useTheme";
-import { useCart } from "@/hooks/useCart";
+import MainSwipeTabBar from "./MainSwipeTabBar";
 import { MainTabParamList } from "./types";
 
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Tab = createMaterialTopTabNavigator<MainTabParamList>();
 
+/**
+ * Main app sections with horizontal swipe (material top tabs + tabBar at bottom).
+ */
 const MainTabs: React.FC = () => {
-  const { isDark } = useTheme();
-  const { cartCount } = useCart();
+  const screenOptions = useMemo(
+    () => ({
+      lazy: true,
+      lazyPreloadDistance: 1,
+      swipeEnabled: true,
+      animationEnabled: true,
+    }),
+    [],
+  );
 
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: "#4F46E5",
-        tabBarInactiveTintColor: isDark ? "#737373" : "#a3a3a3",
-        tabBarStyle: {
-          backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-          borderTopColor: isDark ? "#262626" : "rgba(0,0,0,0.1)",
-          borderTopWidth: 1,
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 64,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "500",
-        },
-      }}
+      tabBarPosition="bottom"
+      tabBar={(props) => <MainSwipeTabBar {...props} />}
+      screenOptions={screenOptions}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
-        }}
+        options={{ title: "Home" }}
       />
       <Tab.Screen
         name="Search"
         component={SearchScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
-        }}
+        options={{ title: "Search" }}
       />
-      <Tab.Screen
-        name="Cart"
-        component={CartScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <ShoppingCart size={size} color={color} />
-          ),
-          tabBarBadge: cartCount > 0 ? cartCount : undefined,
-          tabBarBadgeStyle: {
-            backgroundColor: "#d4183d",
-          },
-        }}
-      />
+      <Tab.Screen name="Cart" component={CartScreen} options={{ title: "Cart" }} />
       <Tab.Screen
         name="Wishlist"
         component={WishlistScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
-        }}
+        options={{ title: "Wishlist" }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
-        }}
+        options={{ title: "Profile" }}
       />
     </Tab.Navigator>
   );

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
-import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
+import TabViewPager, { TabRoute } from "@/navigation/TabViewPager";
 import CategoriesTab from "@/features/search/CategoriesTab";
 import TrendingTab from "@/features/search/TrendingTab";
 import RecentSearchTab from "@/features/search/RecentSearchTab";
@@ -55,7 +55,7 @@ export default function SearchScreen({ navigation }: { navigation: any }) {
           { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
         ]}
       >
-        <TopTabsNavigator routes={routes} renderScene={renderScene} />
+        <TabViewPager routes={routes} renderScene={renderScene} />
       </View>
     </SafeScreen>
   );
