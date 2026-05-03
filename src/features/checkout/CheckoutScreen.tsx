@@ -21,6 +21,8 @@ import { Address } from "@/types";
 import { addressService } from "@/services/address.service";
 import { mockPaymentMethods } from "@/services/mocks/payments";
 import { orderService, CheckoutData } from "@/services/order.service";
+import { notificationService } from "@/services/notification.service";
+import { scheduleLocalNotification } from "@/services/expoNotificationService";
 import { useAuthStore } from "@/store/auth.store";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Checkout">;
@@ -73,6 +75,20 @@ export default function CheckoutScreen({ navigation }: Props) {
     };
 
     await orderService.createOrder(user.id, checkoutData);
+
+    await notificationService.createNotification(user.id, {
+      type: "order",
+      title: "Order Confirmed",
+      message: `Your order has been placed successfully! Total: $${total.toFixed(2)}`,
+      time: new Date().toISOString(),
+      read: false,
+    });
+
+    scheduleLocalNotification(
+      "🎉 Order Confirmed",
+      `Your order has been placed successfully! Total: $${total.toFixed(2)}`,
+    );
+
     clearCart();
     setOrderPlaced(true);
     setTimeout(() => setShowConfetti(true), 100);

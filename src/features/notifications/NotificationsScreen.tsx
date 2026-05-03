@@ -1,13 +1,17 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuthStore } from "@/store/auth.store";
+import { notificationService } from "@/services/notification.service";
+import { Notification } from "@/types";
 import {
   ShoppingBag,
   Truck,
@@ -16,12 +20,52 @@ import {
   ChevronLeft,
   CheckCheck,
 } from "lucide-react-native";
-import { mockNotifications } from "@/services/mocks/notifications";
 
 export default function NotificationsScreen({ navigation }: any) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const { user } = useAuthStore();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadNotifications = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await notificationService.getFirestoreNotifications(user.id);
+      setNotifications(data);
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    setLoading(true);
+    loadNotifications().finally(() => setLoading(false));
+  }, [loadNotifications]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadNotifications();
+    setRefreshing(false);
+  }, [loadNotifications]);
+
+  const handleMarkAsRead = useCallback(
+    async (id: string) => {
+      if (!user?.id) return;
+      await notificationService.markAsReadInFirestore(user.id, id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      );
+    },
+    [user?.id],
+  );
+
+  const handleMarkAllAsRead = useCallback(async () => {
+    if (!user?.id) return;
+    await notificationService.markAllAsReadInFirestore(user.id);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, [user?.id]);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -43,20 +87,14 @@ export default function NotificationsScreen({ navigation }: any) {
   const read = notifications.filter((n) => n.read);
 
   const renderItem = useCallback(
-    ({ item }: { item: (typeof mockNotifications)[0] }) => (
+    ({ item }: { item: Notification }) => (
       <TouchableOpacity
         style={[
           styles.card,
           { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
           !item.read && { borderLeftWidth: 3, borderLeftColor: "#9333ea" },
         ]}
-        onPress={() =>
-          setNotifications(
-            notifications.map((n) =>
-              n.id === item.id ? { ...n, read: true } : n,
-            ),
-          )
-        }
+        onPress={() => handleMarkAsRead(item.id)}
         activeOpacity={0.7}
       >
         <View style={styles.iconBox}>{getIcon(item.type)}</View>
@@ -83,8 +121,18 @@ export default function NotificationsScreen({ navigation }: any) {
         {!item.read && <View style={styles.dot} />}
       </TouchableOpacity>
     ),
-    [isDark, setNotifications],
+    [isDark, handleMarkAsRead],
   );
+
+  if (loading) {
+    return (
+      <SafeScreen>
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color="#9333ea" />
+        </View>
+      </SafeScreen>
+    );
+  }
 
   return (
     <SafeScreen>
@@ -103,55 +151,41 @@ export default function NotificationsScreen({ navigation }: any) {
           >
             Notifications
           </Text>
-          <TouchableOpacity
-            onPress={() =>
-              setNotifications(notifications.map((n) => ({ ...n, read: true })))
-            }
-          >
+          <TouchableOpacity onPress={handleMarkAllAsRead}>
             <CheckCheck size={20} color="#9333ea" />
           </TouchableOpacity>
         </View>
-        {unread.length > 0 && (
-          <View style={styles.section}>
+        {notifications.length === 0 ? (
+          <View style={[styles.container, styles.center]}>
             <Text
-              style={[
-                styles.sectionTitle,
-                { color: isDark ? "#a3a3a3" : "#737373" },
-              ]}
+              style={{ color: isDark ? "#737373" : "#a3a3a3", fontSize: 16 }}
             >
-              Unread ({unread.length})
+              No notifications yet
             </Text>
-            <FlatList
-              data={unread}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
-              scrollEnabled={false}
-              windowSize={5}
-              maxToRenderPerBatch={10}
-              removeClippedSubviews
-            />
           </View>
-        )}
-        {read.length > 0 && (
-          <View style={styles.section}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                { color: isDark ? "#a3a3a3" : "#737373" },
-              ]}
-            >
-              Read
-            </Text>
-            <FlatList
-              data={read}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
-              scrollEnabled={false}
-              windowSize={5}
-              maxToRenderPerBatch={10}
-              removeClippedSubviews
-            />
-          </View>
+        ) : (
+          <FlatList
+            data={notifications}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            contentContainerStyle={styles.listContent}
+            ListHeaderComponent={
+              unread.length > 0 ? (
+                <View style={styles.section}>
+                  <Text
+                    style={[
+                      styles.sectionTitle,
+                      { color: isDark ? "#a3a3a3" : "#737373" },
+                    ]}
+                  >
+                    Unread ({unread.length})
+                  </Text>
+                </View>
+              ) : null
+            }
+          />
         )}
       </View>
     </SafeScreen>
@@ -160,6 +194,7 @@ export default function NotificationsScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  center: { justifyContent: "center", alignItems: "center" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -168,8 +203,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   title: { fontSize: 20, fontWeight: "700" },
-  section: { paddingHorizontal: 20, marginBottom: 16 },
-  sectionTitle: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  section: { paddingHorizontal: 20, marginBottom: 8, marginTop: 8 },
+  sectionTitle: { fontSize: 14, fontWeight: "600" },
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -195,4 +230,5 @@ const styles = StyleSheet.create({
   message: { fontSize: 12, marginTop: 2 },
   time: { fontSize: 11, marginTop: 4 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#9333ea" },
+  listContent: { paddingHorizontal: 20, paddingBottom: 20 },
 });

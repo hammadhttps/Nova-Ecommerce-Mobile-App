@@ -19,7 +19,8 @@ A fully-featured e-commerce mobile application built with React Native (Expo) an
 - **Related Products**: Horizontal scroll of same-category products on product detail pages
 - **Self-Buy Prevention**: You cannot purchase your own products (buttons disabled)
 - **Dark Mode**: Full dark mode support with persistence
-- **Notifications**: Read/unread notification center
+- **Push & Local Notifications**: Expo push token registration, local scheduled notifications (random sales, order confirmations, promotional alerts), foreground notification banners
+- **Notifications Screen**: Firestore-backed notification center with read/unread tracking
 - **Address & Payment Management**: CRUD operations for addresses and payment methods
 - **Home Feed**: Personalized feeds (For You, Flash Sale, Recent, Listings)
 - **Announcement Ticker**: Auto-scrolling marquee on the homepage showing rotating promotional messages
@@ -60,6 +61,7 @@ src/
 │   ├── order.service.ts
 │   ├── address.service.ts
 │   ├── payment.service.ts
+│   ├── expoNotificationService.ts # Push notification registration, handlers, local scheduling
 │   └── notification.service.ts
 ├── store/                    # Zustand stores
 │   ├── auth.store.ts
@@ -157,6 +159,40 @@ node scripts/seedFirestore.js
 1. Install **Expo Go** on your phone (iOS App Store / Google Play)
 2. Run `npx expo start`
 3. Scan the QR code with Expo Go (Android) or camera (iOS)
+
+## Notifications System
+
+The app uses `expo-notifications` for both local and remote (push) notifications.
+
+### What works in Expo Go
+
+- **Local notifications** — scheduled immediately (random sales, order confirmations, promotional alerts)
+- **Foreground notification banners** — notifications show as in-app banners while the app is open
+- **Firestore notification docs** — notifications are persisted to `users/{uid}/notifications/` in Firestore
+- **Notifications Screen** — reads from Firestore with pull-to-refresh
+
+### What requires a development build
+
+- **Remote push notifications** (ExpoPushToken) — generating a push token and receiving server-sent push notifications
+
+> **⚠️ Expo Go limitation**: Since Expo SDK 53, `expo-notifications` remote push functionality was removed from Expo Go. Local notifications work fine, but for full push notification support you need a **development build**:
+>
+> ```bash
+> # Android (requires Android Studio)
+> npx expo run:android
+>
+> # or using EAS Build
+> npx eas build --profile development --platform android
+> ```
+
+### Notification triggers in the app
+
+| Trigger                 | Type                  | Timing                                   |
+| ----------------------- | --------------------- | ---------------------------------------- |
+| App launch              | Local + Firestore doc | 3s (sale) / 5s (promo doc) / 15s (promo) |
+| Order placed            | Local + Firestore doc | Immediately after successful order       |
+| Announcement Ticker     | UI marquee            | Continuous scroll on HomeScreen          |
+| Push token registration | Firestore save        | On app launch (dev build only)           |
 
 ## Architecture Highlights
 
@@ -263,7 +299,7 @@ To use your own Cloudinary account:
 - [x] Related products on product detail
 - [x] Prevent self-purchase
 - [x] Performance optimizations (React.memo, useCallback, FlatList tuning)
-- [ ] Push notifications
+- [x] Push & local notifications (expo-notifications)
 - [ ] Payment gateway (Stripe/Razorpay)
 - [ ] Image caching optimization
 - [ ] Offline support
