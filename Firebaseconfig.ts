@@ -9,7 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const firebaseConfig = {
   apiKey: "AIzaSyAVb0lcokEaDJ3oq53VasYUg2IX4A_oBDA",
   authDomain: "nova-b980c.firebaseapp.com",
-  projectId: "nova-b980c",
+  projectId: "nova-b980c",  
   storageBucket: "nova-b980c.firebasestorage.app",
   messagingSenderId: "220110823698",
   appId: "1:220110823698:web:776c0c5c00c7d9109f13cb",
