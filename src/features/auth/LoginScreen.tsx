@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,59 +7,96 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, Button } from '@/components/common';
-import { useAuthStore } from '@/store/auth.store';
-import { validateEmail } from '@/utils/validators';
-import { useTheme } from '@/hooks/useTheme';
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Input, Button } from "@/components/common";
+import { useAuthStore } from "@/store/auth.store";
+import { validateEmail } from "@/utils/validators";
+import { useTheme } from "@/hooks/useTheme";
 
 interface LoginScreenProps {
   navigation: any;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const { isDark } = useTheme();
-  const { login, loginWithGoogle, isLoading, error } = useAuthStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
+  const { login, resetPassword, isLoading, error } = useAuthStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const handleLogin = async () => {
-    setEmailError('');
+    setEmailError("");
     if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email');
+      setEmailError("Please enter a valid email");
       return;
     }
     try {
       await login({ email, password });
-      navigation.replace('Main');
+      navigation.replace("Main");
     } catch (err) {
       // Error handled by store
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      await loginWithGoogle();
-      navigation.replace('Main');
-    } catch (err) {
-      // Error handled by store
+  const handleForgotPassword = () => {
+    if (!email.trim()) {
+      Alert.alert(
+        "Email Required",
+        "Please enter your email address to reset your password.",
+      );
+      return;
     }
+    if (!validateEmail(email)) {
+      Alert.alert("Invalid Email", "Please enter a valid email address.");
+      return;
+    }
+
+    Alert.alert("Reset Password", `Send password reset email to ${email}?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Send",
+        onPress: async () => {
+          try {
+            await resetPassword(email);
+            Alert.alert(
+              "Email Sent",
+              "Check your email for password reset instructions.",
+            );
+          } catch (err: any) {
+            Alert.alert("Error", err.message || "Failed to send reset email.");
+          }
+        },
+      },
+    ]);
   };
+
+  const screenBg = isDark ? "#0f0f0f" : "#ffffff";
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: screenBg }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: isDark ? '#fafafa' : '#030213' }]}>
+            <Text
+              style={[styles.title, { color: isDark ? "#fafafa" : "#030213" }]}
+            >
               Welcome Back
             </Text>
-            <Text style={[styles.subtitle, { color: isDark ? '#a3a3a3' : '#737373' }]}>
+            <Text
+              style={[
+                styles.subtitle,
+                { color: isDark ? "#a3a3a3" : "#737373" },
+              ]}
+            >
               Sign in to continue shopping
             </Text>
           </View>
@@ -82,11 +119,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               secureTextEntry
             />
 
-            {error && (
-              <Text style={styles.errorText}>{error}</Text>
-            )}
+            {error && <Text style={styles.errorText}>{error}</Text>}
 
-            <TouchableOpacity style={styles.forgotPassword}>
+            <TouchableOpacity
+              style={styles.forgotPassword}
+              onPress={handleForgotPassword}
+            >
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
 
@@ -99,28 +137,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             >
               Sign In
             </Button>
-
-            <View style={styles.divider}>
-              <View style={[styles.dividerLine, { backgroundColor: isDark ? '#262626' : '#ececf0' }]} />
-              <Text style={[styles.dividerText, { color: isDark ? '#737373' : '#a3a3a3' }]}>or</Text>
-              <View style={[styles.dividerLine, { backgroundColor: isDark ? '#262626' : '#ececf0' }]} />
-            </View>
-
-            <Button
-              variant="outline"
-              size="lg"
-              loading={isLoading}
-              onPress={handleGoogleLogin}
-            >
-              Continue with Google
-            </Button>
           </View>
 
           <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: isDark ? '#a3a3a3' : '#737373' }]}>
-              Don't have an account?{' '}
+            <Text
+              style={[
+                styles.footerText,
+                { color: isDark ? "#a3a3a3" : "#737373" },
+              ]}
+            >
+              Don't have an account?{" "}
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+            <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
               <Text style={styles.signupLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -133,20 +161,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingTop: 24,
+    paddingBottom: 40,
   },
   header: {
     marginBottom: 32,
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 8,
   },
   subtitle: {
@@ -156,47 +184,34 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   errorText: {
-    color: '#d4183d',
+    color: "#d4183d",
     fontSize: 14,
     marginBottom: 12,
   },
   forgotPassword: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginBottom: 24,
   },
   forgotPasswordText: {
-    color: '#9333ea',
+    color: "#9333ea",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   button: {
     marginBottom: 16,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-    gap: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    fontSize: 14,
-  },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 16,
   },
   footerText: {
     fontSize: 14,
   },
   signupLink: {
-    color: '#9333ea',
+    color: "#9333ea",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
