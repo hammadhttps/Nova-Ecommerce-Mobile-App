@@ -1,21 +1,14 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, Grid3X3, Heart, ShoppingCart, User } from 'lucide-react-native';
-import HomeScreen from '@/features/home/HomeScreen';
-import CategoriesScreen from '@/features/categories/CategoriesScreen';
-import WishlistScreen from '@/features/wishlist/WishlistScreen';
-import CartScreen from '@/features/cart/CartScreen';
-import ProfileScreen from '@/features/profile/ProfileScreen';
-import { useTheme } from '@/hooks/useTheme';
-import { useCart } from '@/hooks/useCart';
-
-export type MainTabParamList = {
-  Home: undefined;
-  Categories: undefined;
-  Wishlist: undefined;
-  Cart: undefined;
-  Profile: undefined;
-};
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Home, Search, Heart, ShoppingCart, User } from "lucide-react-native";
+import HomeScreen from "@/features/home/HomeScreen";
+import SearchScreen from "@/features/search/SearchScreen";
+import WishlistScreen from "@/features/wishlist/WishlistScreen";
+import CartScreen from "@/features/cart/CartScreen";
+import ProfileScreen from "@/features/profile/ProfileScreen";
+import { useTheme } from "@/hooks/useTheme";
+import { useCart } from "@/hooks/useCart";
+import { MainTabParamList } from "./types";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -27,11 +20,11 @@ const MainTabs: React.FC = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#9333ea',
-        tabBarInactiveTintColor: isDark ? '#737373' : '#a3a3a3',
+        tabBarActiveTintColor: "#4F46E5",
+        tabBarInactiveTintColor: isDark ? "#737373" : "#a3a3a3",
         tabBarStyle: {
-          backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
-          borderTopColor: isDark ? '#262626' : 'rgba(0,0,0,0.1)',
+          backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+          borderTopColor: isDark ? "#262626" : "rgba(0,0,0,0.1)",
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 8,
@@ -39,7 +32,7 @@ const MainTabs: React.FC = () => {
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '500',
+          fontWeight: "500",
         },
       }}
     >
@@ -51,10 +44,23 @@ const MainTabs: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="Categories"
-        component={CategoriesScreen}
+        name="Search"
+        component={SearchScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <Grid3X3 size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <ShoppingCart size={size} color={color} />
+          ),
+          tabBarBadge: cartCount > 0 ? cartCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: "#d4183d",
+          },
         }}
       />
       <Tab.Screen
@@ -62,17 +68,6 @@ const MainTabs: React.FC = () => {
         component={WishlistScreen}
         options={{
           tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
-        }}
-      />
-      <Tab.Screen
-        name="Cart"
-        component={CartScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <ShoppingCart size={size} color={color} />,
-          tabBarBadge: cartCount > 0 ? cartCount : undefined,
-          tabBarBadgeStyle: {
-            backgroundColor: '#d4183d',
-          },
         }}
       />
       <Tab.Screen

@@ -1,30 +1,16 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AuthStack from './AuthStack';
-import ProductDetailScreen from '@/features/product/ProductDetailScreen';
-import SearchScreen from '@/features/search/SearchScreen';
-import CheckoutScreen from '@/features/checkout/CheckoutScreen';
-import OrderHistoryScreen from '@/features/orders/OrderHistoryScreen';
-import OrderDetailScreen from '@/features/orders/OrderDetailScreen';
-import AddressManagementScreen from '@/features/address/AddressManagementScreen';
-import PaymentMethodsScreen from '@/features/payments/PaymentMethodsScreen';
-import NotificationsScreen from '@/features/notifications/NotificationsScreen';
-import HelpScreen from '@/features/help/HelpScreen';
-import SettingsScreen from '@/features/settings/SettingsScreen';
-
-export type RootStackParamList = {
-  Auth: undefined;
-  ProductDetail: { id: number };
-  Search: undefined;
-  Checkout: undefined;
-  OrderHistory: undefined;
-  OrderDetail: { id: string };
-  AddressManagement: undefined;
-  PaymentMethods: undefined;
-  Notifications: undefined;
-  Help: undefined;
-  Settings: undefined;
-};
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import AuthStack from "./AuthStack";
+import ProductDetailScreen from "@/features/product/ProductDetailScreen";
+import CheckoutScreen from "@/features/checkout/CheckoutScreen";
+import OrderHistoryScreen from "@/features/orders/OrderHistoryScreen";
+import OrderDetailScreen from "@/features/orders/OrderDetailScreen";
+import AddressManagementScreen from "@/features/address/AddressManagementScreen";
+import PaymentMethodsScreen from "@/features/payments/PaymentMethodsScreen";
+import NotificationsScreen from "@/features/notifications/NotificationsScreen";
+import HelpScreen from "@/features/help/HelpScreen";
+import SettingsScreen from "@/features/settings/SettingsScreen";
+import { RootStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -42,14 +28,16 @@ const RootNavigator: React.FC = () => {
         options={{
           headerShown: true,
           headerTransparent: true,
-          headerBackTitle: 'Back',
+          headerBackTitle: "Back",
         }}
       />
-      <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
       <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-      <Stack.Screen name="AddressManagement" component={AddressManagementScreen} />
+      <Stack.Screen
+        name="AddressManagement"
+        component={AddressManagementScreen}
+      />
       <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="Help" component={HelpScreen} />
