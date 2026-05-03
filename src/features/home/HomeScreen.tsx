@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Search } from "lucide-react-native";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { Skeleton } from "@/components/common";
+import AnnouncementTicker from "@/components/AnnouncementTicker";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
+import { useAuthStore } from "@/store/auth.store";
 import TopTabsNavigator from "@/navigation/TopTabsNavigator";
 
 interface HomeScreenProps {
@@ -12,7 +14,8 @@ interface HomeScreenProps {
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { resolvedTheme } = useTheme()
+  const { user } = useAuthStore();
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { fetchCart } = useCart();
   const [loading, setLoading] = useState(true);
@@ -66,7 +69,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 { color: isDark ? "#fafafa" : "#030213" },
               ]}
             >
-              Alex Johnson
+              {user?.name || "there"}
             </Text>
           </View>
           <TouchableOpacity
@@ -98,6 +101,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             Search products...
           </Text>
         </TouchableOpacity>
+
+        <AnnouncementTicker />
 
         <View style={styles.tabsContainer}>
           <TopTabsNavigator />
