@@ -1,35 +1,21 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
 import { Button, Input, EmptyState } from "@/components/common";
-import { Minus, Plus, X } from "lucide-react-native";
-import { CartItem } from "@/types";
-import {
-  CompositeNavigationProp,
-  NavigationProp,
-} from "@react-navigation/native";
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { MainTabParamList, RootStackParamList } from "@/navigation/types";
+import TopTabsNavigator, { TabRoute } from "@/navigation/TopTabsNavigator";
+import InCartTab from "@/features/cart/InCartTab";
+import SavedForLaterTab from "@/features/cart/SavedForLaterTab";
+import { CartItem, Product } from "@/types";
+import { SceneMap } from "react-native-tab-view";
 
-type CartScreenNavProp = CompositeNavigationProp<
-  BottomTabNavigationProp<MainTabParamList, "Cart">,
-  NavigationProp<RootStackParamList>
->;
+const routes: TabRoute[] = [
+  { key: "inCart", title: "In Cart" },
+  { key: "saved", title: "Saved" },
+];
 
-interface Props {
-  navigation: CartScreenNavProp;
-}
-
-export default function CartScreen({ navigation }: Props) {
+export default function CartScreen({ navigation }: { navigation: any }) {
   const { isDark } = useTheme();
   const {
     items,
@@ -42,8 +28,43 @@ export default function CartScreen({ navigation }: Props) {
     subtotal,
     shipping,
     total,
+    addToCart,
   } = useCart();
   const [code, setCode] = useState("");
+
+  const handleProductPress = useCallback(
+    (item: CartItem | Product) => {
+      navigation.navigate("ProductDetail", { id: item.id });
+    },
+    [navigation],
+  );
+
+  const handleMoveToCart = useCallback(
+    (product: Product) => {
+      addToCart(product, 1);
+    },
+    [addToCart],
+  );
+
+  const handleApplyPromo = () => {
+    applyPromoCode(code);
+  };
+
+  const renderScene = SceneMap({
+    inCart: () => (
+      <InCartTab
+        onUpdateQuantity={updateQuantity}
+        onRemove={removeFromCart}
+        onProductPress={handleProductPress}
+      />
+    ),
+    saved: () => (
+      <SavedForLaterTab
+        onMoveToCart={handleMoveToCart}
+        onProductPress={handleProductPress}
+      />
+    ),
+  });
 
   if (cartLoading) {
     return <SafeScreen loading />;
@@ -58,6 +79,13 @@ export default function CartScreen({ navigation }: Props) {
             { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
           ]}
         >
+          <View style={styles.header}>
+            <Text
+              style={[styles.title, { color: isDark ? "#fafafa" : "#030213" }]}
+            >
+              My Cart
+            </Text>
+          </View>
           <EmptyState
             icon="cart"
             title="Your cart is empty"
@@ -67,56 +95,6 @@ export default function CartScreen({ navigation }: Props) {
       </SafeScreen>
     );
   }
-
-  const handleApplyPromo = () => {
-    applyPromoCode(code);
-  };
-
-  const renderItem = ({ item }: { item: CartItem }) => (
-    <View
-      style={[styles.card, { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" }]}
-    >
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <View style={styles.info}>
-        <Text
-          style={[styles.name, { color: isDark ? "#fafafa" : "#030213" }]}
-          numberOfLines={2}
-        >
-          {item.name}
-        </Text>
-        <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-        <View style={styles.row}>
-          <View style={styles.qtyRow}>
-            <TouchableOpacity
-              style={styles.qtyBtn}
-              onPress={() =>
-                updateQuantity(item.id, Math.max(1, item.quantity - 1))
-              }
-            >
-              <Minus size={16} color={isDark ? "#fafafa" : "#030213"} />
-            </TouchableOpacity>
-            <Text
-              style={[
-                styles.qtyText,
-                { color: isDark ? "#fafafa" : "#030213" },
-              ]}
-            >
-              {item.quantity}
-            </Text>
-            <TouchableOpacity
-              style={styles.qtyBtn}
-              onPress={() => updateQuantity(item.id, item.quantity + 1)}
-            >
-              <Plus size={16} color={isDark ? "#fafafa" : "#030213"} />
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity onPress={() => removeFromCart(item.id)}>
-            <X size={20} color="#ef4444" />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
 
   return (
     <SafeScreen>
@@ -138,13 +116,11 @@ export default function CartScreen({ navigation }: Props) {
             {items.length} items
           </Text>
         </View>
-        <FlatList
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+
+        <View style={styles.tabsWrapper}>
+          <TopTabsNavigator routes={routes} renderScene={renderScene} />
+        </View>
+
         <View
           style={[
             styles.bottom,
@@ -239,37 +215,7 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 16 },
   title: { fontSize: 28, fontWeight: "700" },
   subtitle: { fontSize: 14, marginTop: 4 },
-  listContent: { paddingHorizontal: 20, paddingBottom: 20 },
-  card: {
-    flexDirection: "row",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  image: { width: 80, height: 80, borderRadius: 8 },
-  info: { flex: 1, marginLeft: 12, justifyContent: "space-between" },
-  name: { fontSize: 14, fontWeight: "600" },
-  price: { fontSize: 16, fontWeight: "700", color: "#9333ea" },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  qtyRow: { flexDirection: "row", alignItems: "center" },
-  qtyBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#f0f0f0",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  qtyText: { fontSize: 14, fontWeight: "600", marginHorizontal: 12 },
+  tabsWrapper: { flex: 1 },
   bottom: {
     padding: 20,
     borderTopLeftRadius: 24,
