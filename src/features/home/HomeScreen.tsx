@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,17 +6,22 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, ChevronRight, Clock } from 'lucide-react-native';
-import { SafeScreen } from '@/components/layout/SafeScreen';
-import { ProductCard } from '@/components/ProductCard';
-import { Skeleton, Badge } from '@/components/common';
-import { useTheme } from '@/hooks/useTheme';
-import { useCart } from '@/hooks/useCart';
-import { flashSaleProducts, forYouProducts, recentProducts, categories } from '@/services/mocks/products';
-import { Product } from '@/types';
-import { formatCurrency } from '@/utils/formatters';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Search, ChevronRight, Clock } from "lucide-react-native";
+import { SafeScreen } from "@/components/layout/SafeScreen";
+import { ProductCard } from "@/components/ProductCard";
+import { Skeleton, Badge } from "@/components/common";
+import { useTheme } from "@/hooks/useTheme";
+import { useCart } from "@/hooks/useCart";
+import {
+  flashSaleProducts,
+  forYouProducts,
+  recentProducts,
+  categories,
+} from "@/services/mocks/products";
+import { Product } from "@/types";
+import { formatCurrency } from "@/utils/formatters";
 
 interface HomeScreenProps {
   navigation: any;
@@ -35,9 +40,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     init();
   }, []);
 
-  const handleProductPress = useCallback((product: Product) => {
-    navigation.navigate('ProductDetail', { id: product.id });
-  }, [navigation]);
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      navigation.navigate("ProductDetail", { id: product.id });
+    },
+    [navigation],
+  );
 
   const renderFlashSaleItem = ({ item }: { item: Product }) => (
     <TouchableOpacity
@@ -46,9 +54,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       activeOpacity={0.7}
     >
       <View style={styles.flashSaleImageContainer}>
-        <View style={[styles.flashSaleImage, { backgroundColor: isDark ? '#262626' : '#f5f5f5' }]} />
+        <View
+          style={[
+            styles.flashSaleImage,
+            { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
+          ]}
+        />
       </View>
-      <Text style={[styles.flashSaleName, { color: isDark ? '#fafafa' : '#030213' }]} numberOfLines={1}>
+      <Text
+        style={[
+          styles.flashSaleName,
+          { color: isDark ? "#fafafa" : "#030213" },
+        ]}
+        numberOfLines={1}
+      >
         {item.name}
       </Text>
       <Text style={styles.flashSalePrice}>{formatCurrency(item.price)}</Text>
@@ -86,28 +105,58 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
-            <Text style={[styles.greeting, { color: isDark ? '#a3a3a3' : '#737373' }]}>Good Morning</Text>
-            <Text style={[styles.username, { color: isDark ? '#fafafa' : '#030213' }]}>Alex Johnson</Text>
+            <Text
+              style={[
+                styles.greeting,
+                { color: isDark ? "#a3a3a3" : "#737373" },
+              ]}
+            >
+              Good Morning
+            </Text>
+            <Text
+              style={[
+                styles.username,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+            >
+              Alex Johnson
+            </Text>
           </View>
-          <TouchableOpacity style={styles.searchButton} onPress={() => navigation.navigate('Search')}>
-            <Search size={20} color={isDark ? '#fafafa' : '#030213'} />
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => navigation.navigate("Search")}
+          >
+            <Search size={20} color={isDark ? "#fafafa" : "#030213"} />
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity
-          style={[styles.searchBar, { backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5' }]}
-          onPress={() => navigation.navigate('Search')}
+          style={[
+            styles.searchBar,
+            { backgroundColor: isDark ? "#1a1a1a" : "#f5f5f5" },
+          ]}
+          onPress={() => navigation.navigate("Search")}
           activeOpacity={0.7}
         >
-          <Search size={20} color={isDark ? '#737373' : '#a3a3a3'} />
-          <Text style={[styles.searchPlaceholder, { color: isDark ? '#737373' : '#a3a3a3' }]}>
+          <Search size={20} color={isDark ? "#737373" : "#a3a3a3"} />
+          <Text
+            style={[
+              styles.searchPlaceholder,
+              { color: isDark ? "#737373" : "#a3a3a3" },
+            ]}
+          >
             Search products...
           </Text>
         </TouchableOpacity>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? '#fafafa' : '#030213' }]}>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+            >
               Flash Sales 🔥
             </Text>
             <Badge label="Limited" variant="destructive" />
@@ -124,8 +173,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? '#fafafa' : '#030213' }]}>Categories</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Categories')}>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+            >
+              Categories
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Search")}>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
@@ -134,13 +190,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               <TouchableOpacity
                 key={category.id}
                 style={styles.categoryItem}
-                onPress={() => navigation.navigate('Categories')}
+                onPress={() => navigation.navigate("Search")}
                 activeOpacity={0.7}
               >
-                <View style={[styles.categoryIcon, { backgroundColor: category.color + '20' }]}>
+                <View
+                  style={[
+                    styles.categoryIcon,
+                    { backgroundColor: category.color + "20" },
+                  ]}
+                >
                   <Text style={styles.categoryEmoji}>{category.icon}</Text>
                 </View>
-                <Text style={[styles.categoryName, { color: isDark ? '#fafafa' : '#030213' }]}>
+                <Text
+                  style={[
+                    styles.categoryName,
+                    { color: isDark ? "#fafafa" : "#030213" },
+                  ]}
+                >
                   {category.name}
                 </Text>
               </TouchableOpacity>
@@ -150,7 +216,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? '#fafafa' : '#030213' }]}>For You</Text>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+            >
+              For You
+            </Text>
           </View>
           <View style={styles.productsGrid}>
             {forYouProducts.map((product) => (
@@ -165,7 +238,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? '#fafafa' : '#030213' }]}>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+            >
               Recently Viewed
             </Text>
           </View>
@@ -177,14 +255,30 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 onPress={() => handleProductPress(item)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.recentImage, { backgroundColor: isDark ? '#262626' : '#f5f5f5' }]} />
+                <View
+                  style={[
+                    styles.recentImage,
+                    { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
+                  ]}
+                />
                 <View style={styles.recentInfo}>
-                  <Text style={[styles.recentName, { color: isDark ? '#fafafa' : '#030213' }]} numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.recentName,
+                      { color: isDark ? "#fafafa" : "#030213" },
+                    ]}
+                    numberOfLines={1}
+                  >
                     {item.name}
                   </Text>
-                  <Text style={styles.recentPrice}>{formatCurrency(item.price)}</Text>
+                  <Text style={styles.recentPrice}>
+                    {formatCurrency(item.price)}
+                  </Text>
                 </View>
-                <ChevronRight size={20} color={isDark ? '#737373' : '#a3a3a3'} />
+                <ChevronRight
+                  size={20}
+                  color={isDark ? "#737373" : "#a3a3a3"}
+                />
               </TouchableOpacity>
             )}
             keyExtractor={(item) => item.id.toString()}
@@ -201,9 +295,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
@@ -213,19 +307,19 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   searchButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: 16,
     marginTop: 8,
     paddingHorizontal: 16,
@@ -240,20 +334,20 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   seeAllText: {
-    color: '#9333ea',
+    color: "#9333ea",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   flashSaleList: {
     paddingHorizontal: 16,
@@ -262,63 +356,63 @@ const styles = StyleSheet.create({
   flashSaleCard: {
     width: 160,
     marginRight: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     padding: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
   flashSaleImageContainer: {
-    width: '100%',
+    width: "100%",
     aspectRatio: 1,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 8,
   },
   flashSaleImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   flashSaleName: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 4,
   },
   flashSalePrice: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#9333ea',
+    fontWeight: "700",
+    color: "#9333ea",
     marginBottom: 4,
   },
   timeLeftContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   timeLeftText: {
     fontSize: 12,
-    color: '#d4183d',
-    fontWeight: '500',
+    color: "#d4183d",
+    fontWeight: "500",
   },
   categoriesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 16,
     gap: 12,
   },
   categoryItem: {
-    width: '30%',
-    alignItems: 'center',
+    width: "30%",
+    alignItems: "center",
   },
   categoryIcon: {
     width: 64,
     height: 64,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 8,
   },
   categoryEmoji: {
@@ -326,18 +420,18 @@ const styles = StyleSheet.create({
   },
   categoryName: {
     fontSize: 12,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
   productsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 16,
     gap: 12,
   },
   recentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
@@ -352,13 +446,13 @@ const styles = StyleSheet.create({
   },
   recentName: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 4,
   },
   recentPrice: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#9333ea',
+    fontWeight: "600",
+    color: "#9333ea",
   },
 });
 
