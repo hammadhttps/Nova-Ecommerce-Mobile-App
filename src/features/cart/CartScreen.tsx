@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
@@ -16,7 +17,9 @@ const routes: TabRoute[] = [
 ];
 
 export default function CartScreen({ navigation }: { navigation: any }) {
-  const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const {
     items,
     cartLoading,
@@ -34,7 +37,7 @@ export default function CartScreen({ navigation }: { navigation: any }) {
 
   const handleProductPress = useCallback(
     (item: CartItem | Product) => {
-      navigation.navigate("ProductDetail", { id: item.id });
+      navigation.navigate("ProductDetail", { id: String(item.id) });
     },
     [navigation],
   );
@@ -124,7 +127,10 @@ export default function CartScreen({ navigation }: { navigation: any }) {
         <View
           style={[
             styles.bottom,
-            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+            {
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+              paddingBottom: Math.max(20, insets.bottom),
+            },
           ]}
         >
           <View style={styles.promoRow}>
@@ -189,7 +195,15 @@ export default function CartScreen({ navigation }: { navigation: any }) {
                 {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
               </Text>
             </View>
-            <View style={[styles.summaryRow, styles.totalRow]}>
+            <View
+              style={[
+                styles.summaryRow,
+                styles.totalRow,
+                {
+                  borderTopColor: isDark ? "#404040" : "#e5e5e5",
+                },
+              ]}
+            >
               <Text
                 style={[
                   styles.totalLabel,
@@ -217,7 +231,8 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, marginTop: 4 },
   tabsWrapper: { flex: 1 },
   bottom: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     elevation: 8,
@@ -239,7 +254,6 @@ const styles = StyleSheet.create({
   value: { fontSize: 14, fontWeight: "600" },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
     paddingTop: 12,
     marginTop: 8,
   },
