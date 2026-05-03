@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,41 +7,42 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, Button } from '@/components/common';
-import { useAuthStore } from '@/store/auth.store';
-import { validateEmail, validatePassword } from '@/utils/validators';
-import { useTheme } from '@/hooks/useTheme';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Input, Button } from "@/components/common";
+import { useAuthStore } from "@/store/auth.store";
+import { validateEmail, validatePassword } from "@/utils/validators";
+import { useTheme } from "@/hooks/useTheme";
 
 interface SignupScreenProps {
   navigation: any;
 }
 
 const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const insets = useSafeAreaInsets();
   const { signup, isLoading, error } = useAuthStore();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [nameError, setNameError] = useState('');
-  const [emailError, setEmailError] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
   const handleSignup = async () => {
-    setNameError('');
-    setEmailError('');
+    setNameError("");
+    setEmailError("");
     setPasswordErrors([]);
 
     let hasError = false;
 
     if (!name.trim()) {
-      setNameError('Name is required');
+      setNameError("Name is required");
       hasError = true;
     }
     if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email');
+      setEmailError("Please enter a valid email");
       hasError = true;
     }
     const pwdValidation = validatePassword(password);
@@ -54,26 +55,47 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
     try {
       await signup({ name, email, password });
-      navigation.replace('Main');
+      navigation.replace("Main");
     } catch (err) {
       // Error handled by store
     }
   };
 
-  const screenBg = isDark ? '#0f0f0f' : '#ffffff';
+  const screenBg = isDark ? "#0f0f0f" : "#ffffff";
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: screenBg }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: screenBg,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: isDark ? '#fafafa' : '#030213' }]}>
+            <Text
+              style={[styles.title, { color: isDark ? "#fafafa" : "#030213" }]}
+            >
               Create Account
             </Text>
-            <Text style={[styles.subtitle, { color: isDark ? '#a3a3a3' : '#737373' }]}>
+            <Text
+              style={[
+                styles.subtitle,
+                { color: isDark ? "#a3a3a3" : "#737373" },
+              ]}
+            >
               Join Nova and start shopping today
             </Text>
           </View>
@@ -112,9 +134,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               </View>
             )}
 
-            {error && (
-              <Text style={styles.errorText}>{error}</Text>
-            )}
+            {error && <Text style={styles.errorText}>{error}</Text>}
 
             <Button
               variant="primary"
@@ -128,16 +148,21 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           </View>
 
           <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: isDark ? '#a3a3a3' : '#737373' }]}>
-              Already have an account?{' '}
+            <Text
+              style={[
+                styles.footerText,
+                { color: isDark ? "#a3a3a3" : "#737373" },
+              ]}
+            >
+              Already have an account?{" "}
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
               <Text style={styles.loginLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -147,7 +172,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 40,
@@ -157,43 +182,43 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
   },
   form: {
-    marginBottom: 24,
+    gap: 16,
   },
   passwordHints: {
-    marginTop: -8,
-    marginBottom: 16,
+    gap: 4,
+    marginTop: 4,
   },
   hintText: {
-    color: '#d4183d',
     fontSize: 12,
+    color: "#6b7280",
   },
   errorText: {
-    color: '#d4183d',
+    color: "#ef4444",
     fontSize: 14,
-    marginBottom: 12,
+    marginTop: 8,
   },
   button: {
-    marginBottom: 16,
+    marginTop: 8,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 32,
   },
   footerText: {
     fontSize: 14,
   },
   loginLink: {
-    color: '#9333ea',
+    color: "#9333ea",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

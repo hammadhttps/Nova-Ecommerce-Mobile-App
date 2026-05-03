@@ -1,26 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
-import { categories } from "@/services/mocks/products";
+import { productService } from "@/services/product.service";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
+import { Category } from "@/types";
 
 export default function CategoriesScreen({ navigation }: any) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await productService.getCategories();
+        setCategories(cats);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCategories();
+  }, []);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const renderCategory = ({ item }: { item: (typeof categories)[0] }) => {
+  const renderCategory = ({ item }: { item: Category }) => {
     const isExpanded = expandedId === item.id;
 
     return (
@@ -78,6 +96,16 @@ export default function CategoriesScreen({ navigation }: any) {
     );
   };
 
+  if (loading) {
+    return (
+      <SafeScreen>
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color="#9333ea" />
+        </View>
+      </SafeScreen>
+    );
+  }
+
   return (
     <SafeScreen>
       <View
@@ -107,6 +135,7 @@ export default function CategoriesScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  center: { alignItems: "center", justifyContent: "center" },
   header: { paddingHorizontal: 20, paddingVertical: 16 },
   title: { fontSize: 28, fontWeight: "700" },
   list: { paddingHorizontal: 20, paddingBottom: 20 },
