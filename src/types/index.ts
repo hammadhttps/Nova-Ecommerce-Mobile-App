@@ -45,23 +45,27 @@ export interface Address {
   street: string;
   city: string;
   phone: string;
+  zip?: string;
   isDefault: boolean;
 }
 
 export interface PaymentMethod {
   id: number;
-  type: 'visa' | 'mastercard' | 'amex';
+  type: "visa" | "mastercard" | "amex";
   number: string;
   expiry: string;
   name: string;
+  last4?: string;
   isDefault: boolean;
 }
 
 export interface Order {
   id: string;
   date: string;
-  status: 'delivered' | 'in_transit' | 'processing' | 'cancelled';
+  status: "delivered" | "in_transit" | "processing" | "cancelled";
   total: number;
+  subtotal?: number;
+  shipping?: number;
   items: Array<{
     name: string;
     quantity: number;
@@ -74,7 +78,7 @@ export interface Order {
 
 export interface Notification {
   id: number;
-  type: 'order' | 'offer' | 'success' | 'price_drop' | 'delivery';
+  type: "order" | "offer" | "success" | "price_drop" | "delivery";
   title: string;
   message: string;
   time: string;
