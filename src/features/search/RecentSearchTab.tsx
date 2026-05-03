@@ -125,34 +125,43 @@ export default function RecentSearchTab({
       <FlatList
         data={recentSearches}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.searchItem,
-              { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
-            ]}
-            onPress={() => handleSelectSearch(item.term)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.left}>
-              <Search size={18} color={isDark ? "#737373" : "#a3a3a3"} />
-              <Text
-                style={[styles.term, { color: isDark ? "#fafafa" : "#030213" }]}
-                numberOfLines={1}
-              >
-                {item.term}
-              </Text>
-            </View>
+        renderItem={useCallback(
+          ({ item }: { item: RecentSearch }) => (
             <TouchableOpacity
-              onPress={() => handleRemoveItem(item.id)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={[
+                styles.searchItem,
+                { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+              ]}
+              onPress={() => handleSelectSearch(item.term)}
+              activeOpacity={0.7}
             >
-              <Trash2 size={16} color={isDark ? "#737373" : "#a3a3a3"} />
+              <View style={styles.left}>
+                <Search size={18} color={isDark ? "#737373" : "#a3a3a3"} />
+                <Text
+                  style={[
+                    styles.term,
+                    { color: isDark ? "#fafafa" : "#030213" },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {item.term}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => handleRemoveItem(item.id)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Trash2 size={16} color={isDark ? "#737373" : "#a3a3a3"} />
+              </TouchableOpacity>
             </TouchableOpacity>
-          </TouchableOpacity>
+          ),
+          [isDark, handleSelectSearch, handleRemoveItem],
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
         ListEmptyComponent={
           <View style={styles.center}>
             <Text

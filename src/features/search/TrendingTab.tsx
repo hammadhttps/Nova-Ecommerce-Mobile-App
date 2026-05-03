@@ -69,6 +69,9 @@ export default React.memo(function TrendingTab({
         columnWrapperStyle={styles.grid}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
         ListEmptyComponent={
           <View style={styles.center}>
             <Text style={{ color: isDark ? "#a3a3a3" : "#737373" }}>
