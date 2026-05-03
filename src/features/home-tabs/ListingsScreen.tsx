@@ -89,6 +89,7 @@ const ListingsScreen: React.FC = React.memo(function ListingsScreen() {
         contentContainerStyle={styles.listContent}
         initialNumToRender={8}
         windowSize={5}
+        maxToRenderPerBatch={10}
         removeClippedSubviews
         showsVerticalScrollIndicator={false}
       />
