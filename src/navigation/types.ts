@@ -11,7 +11,8 @@ export type RootStackParamList = {
   Notifications: undefined;
   Help: undefined;
   Settings: undefined;
-  SellProduct: undefined;
+  SellProduct: { productId?: string };
+  MyProducts: undefined;
 };
 
 export type AuthStackParamList = {
@@ -34,5 +35,4 @@ export type MainTabParamList = {
 export type HomeTopTabParamList = {
   Feed: undefined;
   Listings: undefined;
-  HomeProfile: undefined;
 };
