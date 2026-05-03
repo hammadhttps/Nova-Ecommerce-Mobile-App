@@ -59,7 +59,7 @@ interface PriceDropsTabProps {
 export default React.memo(function PriceDropsTab({
   onProductPress,
 }: PriceDropsTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
@@ -119,6 +119,9 @@ export default React.memo(function PriceDropsTab({
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
       />
     </View>
   );
