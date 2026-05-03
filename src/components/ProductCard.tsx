@@ -18,7 +18,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onPress,
   showComparisonToggle = false,
 }) => {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
   const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
   const { comparisonMode, addToComparison, removeFromComparison, selectedProducts } =
     useComparison();
