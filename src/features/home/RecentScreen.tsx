@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { ChevronRight } from "lucide-react-native";
 import { useTheme } from "@/hooks/useTheme";
-import { recentProducts } from "@/services/mocks/products";
+import { productService } from "@/services/product.service";
 import { Product } from "@/types";
 import { formatCurrency } from "@/utils/formatters";
 
@@ -18,48 +19,78 @@ interface RecentScreenProps {
 
 const RecentScreen: React.FC<RecentScreenProps> = React.memo(
   ({ onProductPress }) => {
-    const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark";
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const renderItem = ({ item }: { item: Product }) => (
-      <TouchableOpacity
-        style={[
-          styles.recentItem,
-          { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
-        ]}
-        onPress={() => onProductPress(item)}
-        activeOpacity={0.7}
-      >
-        <View
+    useEffect(() => {
+      const loadProducts = async () => {
+        try {
+          const recent = await productService.getRecentProducts();
+          setProducts(recent);
+        } catch (error) {
+          console.error("Failed to load recent products:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadProducts();
+    }, []);
+
+    const renderItem = useCallback(
+      ({ item }: { item: Product }) => (
+        <TouchableOpacity
           style={[
-            styles.recentImage,
-            { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
+            styles.recentItem,
+            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
           ]}
-        />
-        <View style={styles.recentInfo}>
-          <Text
+          onPress={() => onProductPress(item)}
+          activeOpacity={0.7}
+        >
+          <View
             style={[
-              styles.recentName,
-              { color: isDark ? "#fafafa" : "#030213" },
+              styles.recentImage,
+              { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
             ]}
-            numberOfLines={1}
-          >
-            {item.name}
-          </Text>
-          <Text style={styles.recentPrice}>{formatCurrency(item.price)}</Text>
-        </View>
-        <ChevronRight size={20} color={isDark ? "#737373" : "#a3a3a3"} />
-      </TouchableOpacity>
+          />
+          <View style={styles.recentInfo}>
+            <Text
+              style={[
+                styles.recentName,
+                { color: isDark ? "#fafafa" : "#030213" },
+              ]}
+              numberOfLines={1}
+            >
+              {item.name}
+            </Text>
+            <Text style={styles.recentPrice}>{formatCurrency(item.price)}</Text>
+          </View>
+          <ChevronRight size={20} color={isDark ? "#737373" : "#a3a3a3"} />
+        </TouchableOpacity>
+      ),
+      [isDark, onProductPress],
     );
+
+    if (loading) {
+      return (
+        <View style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color="#9333ea" />
+        </View>
+      );
+    }
 
     return (
       <View style={styles.container}>
         <FlatList
-          data={recentProducts}
+          data={products}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          removeClippedSubviews
         />
       </View>
     );
@@ -72,6 +103,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  center: { alignItems: "center", justifyContent: "center" },
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 12,

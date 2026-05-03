@@ -15,11 +15,13 @@ import {
   Globe,
   Info,
   LogOut,
+  MapPin,
 } from "lucide-react-native";
 import { LucideIcon } from "lucide-react-native";
 
 const settingsItems: { icon: LucideIcon; label: string; value?: string }[] = [
   { icon: Bell, label: "Notifications", value: "On" },
+  { icon: MapPin, label: "Addresses" },
   { icon: Moon, label: "Dark Mode" },
   { icon: Globe, label: "Language", value: "English" },
   { icon: Shield, label: "Privacy & Security" },
@@ -37,7 +39,7 @@ export default React.memo(function SettingsTab({
   onLogout,
   onPress,
 }: SettingsTabProps) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
@@ -105,6 +107,9 @@ export default React.memo(function SettingsTab({
           renderItem={renderItem}
           keyExtractor={(item) => item.label}
           showsVerticalScrollIndicator={false}
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          removeClippedSubviews
         />
       </View>
       <TouchableOpacity

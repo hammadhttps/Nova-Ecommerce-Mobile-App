@@ -1,5 +1,5 @@
 import { Product, Category, Review } from "@/types";
-import { db, storage } from "../../Firebaseconfig";
+import { db } from "../../Firebaseconfig";
 import {
   collection,
   doc,
@@ -7,11 +7,11 @@ import {
   getDocs,
   setDoc,
   deleteDoc,
+  updateDoc,
   query,
   where,
   orderBy,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const productService = {
   async getFlashSaleProducts(): Promise<Product[]> {
@@ -78,6 +78,36 @@ export const productService = {
     );
   },
 
+  async getProductsByCategory(category: string): Promise<Product[]> {
+    const q = query(
+      collection(db, "products"),
+      where("category", "==", category),
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as Product,
+    );
+  },
+
+  async getUserProducts(userId: string): Promise<Product[]> {
+    const q = query(
+      collection(db, "products"),
+      where("sellerId", "==", userId),
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as Product,
+    );
+  },
+
+  async getTrendingProducts(): Promise<Product[]> {
+    const q = query(collection(db, "products"), where("trending", "==", true));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as Product,
+    );
+  },
+
   async searchProducts(query: string): Promise<Product[]> {
     if (!query.trim()) return [];
     const snapshot = await getDocs(collection(db, "products"));
@@ -98,21 +128,35 @@ export const productService = {
     return newProduct;
   },
 
+  async updateProduct(
+    id: string,
+    updates: Partial<Omit<Product, "id">>,
+  ): Promise<void> {
+    await updateDoc(doc(db, "products", id), updates);
+  },
+
+  async deleteProduct(id: string): Promise<void> {
+    await deleteDoc(doc(db, "products", id));
+  },
+
   async uploadProductImage(
-    productId: string,
+    _productId: string,
     imageUri: string,
   ): Promise<string> {
-    // Convert image URI to blob
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    const data = new FormData();
+    data.append("file", {
+      uri: imageUri,
+      type: "image/jpeg",
+      name: "upload.jpg",
+    } as any);
+    data.append("upload_preset", "nova_uploads");
 
-    // Upload to Firebase Storage
-    const storageRef = ref(storage, `products/${productId}/${Date.now()}`);
-    await uploadBytes(storageRef, blob);
-
-    // Get download URL
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dkyjvyz1m/image/upload",
+      { method: "POST", body: data },
+    );
+    const json = await res.json();
+    return json.secure_url;
   },
 
   async addReview(

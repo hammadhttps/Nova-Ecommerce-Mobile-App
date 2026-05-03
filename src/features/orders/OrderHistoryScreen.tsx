@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -46,7 +46,7 @@ const getStatusVariant = (
 };
 
 export default function OrderHistoryScreen({ navigation }: Props) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>("all");
@@ -66,52 +66,65 @@ export default function OrderHistoryScreen({ navigation }: Props) {
       .catch(() => setIsLoading(false));
   }, [user?.id, activeTab]);
 
-  const renderItem = ({ item }: { item: Order }) => (
-    <TouchableOpacity
-      style={[styles.card, { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" }]}
-      onPress={() => navigation.navigate("OrderDetail", { id: item.id })}
-      activeOpacity={0.7}
-    >
-      <View style={styles.header}>
-        <Text
-          style={[styles.orderId, { color: isDark ? "#fafafa" : "#030213" }]}
-        >
-          {item.id}
-        </Text>
-        <Badge
-          label={tabLabels[item.status as TabType] || item.status}
-          variant={getStatusVariant(item.status)}
-          size="sm"
-        />
-      </View>
-      {item.items.slice(0, 3).map((product, index) => (
-        <View key={index} style={styles.productRow}>
-          <Image source={{ uri: product.image }} style={styles.productImage} />
-          <View style={styles.productInfo}>
-            <Text
-              style={[
-                styles.productName,
-                { color: isDark ? "#fafafa" : "#030213" },
-              ]}
-              numberOfLines={1}
-            >
-              {product.name} x{product.quantity}
-            </Text>
-            <Text style={[styles.productPrice, { color: "#9333ea" }]}>
-              ${product.price.toFixed(2)}
-            </Text>
-          </View>
+  const renderItem = useCallback(
+    ({ item }: { item: Order }) => (
+      <TouchableOpacity
+        style={[
+          styles.card,
+          { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
+        ]}
+        onPress={() => navigation.navigate("OrderDetail", { id: item.id })}
+        activeOpacity={0.7}
+      >
+        <View style={styles.header}>
+          <Text
+            style={[styles.orderId, { color: isDark ? "#fafafa" : "#030213" }]}
+          >
+            {item.id}
+          </Text>
+          <Badge
+            label={tabLabels[item.status as TabType] || item.status}
+            variant={getStatusVariant(item.status)}
+            size="sm"
+          />
         </View>
-      ))}
-      <View style={styles.footer}>
-        <Text style={[styles.total, { color: isDark ? "#fafafa" : "#030213" }]}>
-          Total: ${item.total.toFixed(2)}
-        </Text>
-        <Text style={[styles.date, { color: isDark ? "#a3a3a3" : "#737373" }]}>
-          {item.date}
-        </Text>
-      </View>
-    </TouchableOpacity>
+        {item.items.slice(0, 3).map((product, index) => (
+          <View key={index} style={styles.productRow}>
+            <Image
+              source={{ uri: product.image }}
+              style={styles.productImage}
+            />
+            <View style={styles.productInfo}>
+              <Text
+                style={[
+                  styles.productName,
+                  { color: isDark ? "#fafafa" : "#030213" },
+                ]}
+                numberOfLines={1}
+              >
+                {product.name} x{product.quantity}
+              </Text>
+              <Text style={[styles.productPrice, { color: "#9333ea" }]}>
+                ${product.price.toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        ))}
+        <View style={styles.footer}>
+          <Text
+            style={[styles.total, { color: isDark ? "#fafafa" : "#030213" }]}
+          >
+            Total: ${item.total.toFixed(2)}
+          </Text>
+          <Text
+            style={[styles.date, { color: isDark ? "#a3a3a3" : "#737373" }]}
+          >
+            {item.date}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    ),
+    [isDark, navigation],
   );
 
   if (isLoading) {
@@ -160,6 +173,9 @@ export default function OrderHistoryScreen({ navigation }: Props) {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          removeClippedSubviews
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={{ color: isDark ? "#a3a3a3" : "#737373" }}>

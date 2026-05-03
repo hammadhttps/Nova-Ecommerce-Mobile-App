@@ -17,8 +17,11 @@ export interface TabViewPagerProps {
 const windowWidth = Dimensions.get("window").width;
 
 /** Generic swipeable tabs (Cart, Search, Profile, Wishlist). Home uses TopTabsNavigator. */
-export default function TabViewPager({ routes, renderScene }: TabViewPagerProps) {
-  const { resolvedTheme } = useTheme()
+export default function TabViewPager({
+  routes,
+  renderScene,
+}: TabViewPagerProps) {
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [index, setIndex] = useState(0);
 
@@ -38,26 +41,25 @@ export default function TabViewPager({ routes, renderScene }: TabViewPagerProps)
         tabStyle={styles.tabStyle}
         labelStyle={[
           styles.labelStyle,
-          { color: isDark ? "#a3a3a3" : "#737373" },
+          { color: isDark ? "#e5e5e5" : "#262626" },
         ]}
         activeColor={isDark ? "#fafafa" : "#111827"}
+        inactiveColor={isDark ? "#e5e5e5" : "#262626"}
         pressColor="transparent"
         pressOpacity={0.1}
         renderLabel={({
           route: r,
           focused,
-          color,
         }: {
           route: TabRoute;
           focused: boolean;
-          color: string;
         }) => (
           <View style={styles.labelContainer}>
             {r.icon && <Text style={styles.tabIcon}>{r.icon}</Text>}
             <Text
               style={[
                 styles.tabLabel,
-                { color: focused ? "#4F46E5" : color },
+                { color: focused ? "#4F46E5" : isDark ? "#e5e5e5" : "#262626" },
                 { fontWeight: focused ? "700" : "500" },
               ]}
             >

@@ -113,6 +113,30 @@ export const authService = {
     }
   },
 
+  async updateProfilePhoto(imageUri: string): Promise<string> {
+    const data = new FormData();
+    data.append("file", {
+      uri: imageUri,
+      type: "image/jpeg",
+      name: "profile.jpg",
+    } as any);
+    data.append("upload_preset", "nova_uploads");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dkyjvyz1m/image/upload",
+      { method: "POST", body: data },
+    );
+    const json = await res.json();
+    const photoURL = json.secure_url;
+
+    const firebaseUser = auth.currentUser;
+    if (firebaseUser) {
+      await updateProfile(firebaseUser, { photoURL });
+    }
+
+    return photoURL;
+  },
+
   async logout(): Promise<void> {
     try {
       await signOut(auth);

@@ -105,7 +105,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {loading ? (
         <ActivityIndicator color={textColor} size="small" />
-      ) : (
+      ) : typeof displayText === "string" ? (
         <Text
           style={[
             { color: textColor, fontWeight: "500" },
@@ -114,6 +114,8 @@ export const Button: React.FC<ButtonProps> = ({
         >
           {displayText}
         </Text>
+      ) : (
+        displayText
       )}
     </TouchableOpacity>
   );

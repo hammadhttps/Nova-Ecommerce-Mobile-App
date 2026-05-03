@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { Clock } from "lucide-react-native";
 import { useTheme } from "@/hooks/useTheme";
@@ -19,8 +20,8 @@ interface FlashSaleScreenProps {
 
 const FlashSaleScreen: React.FC<FlashSaleScreenProps> = React.memo(
   ({ onProductPress }) => {
-    const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark";
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -39,56 +40,59 @@ const FlashSaleScreen: React.FC<FlashSaleScreenProps> = React.memo(
       }
     };
 
-    const renderFlashSaleItem = ({ item }: { item: Product }) => (
-      <TouchableOpacity
-        style={[
-          styles.flashSaleCard,
-          { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
-        ]}
-        onPress={() => onProductPress(item)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.flashSaleImageContainer}>
-          {item.image ? (
-            <Image
-              source={{ uri: item.image }}
-              style={styles.flashSaleImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View
-              style={[
-                styles.flashSaleImage,
-                { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
-              ]}
-            />
-          )}
-        </View>
-        <Text
+    const renderFlashSaleItem = useCallback(
+      ({ item }: { item: Product }) => (
+        <TouchableOpacity
           style={[
-            styles.flashSaleName,
-            { color: isDark ? "#fafafa" : "#030213" },
+            styles.flashSaleCard,
+            { backgroundColor: isDark ? "#1a1a1a" : "#ffffff" },
           ]}
-          numberOfLines={1}
+          onPress={() => onProductPress(item)}
+          activeOpacity={0.7}
         >
-          {item.name}
-        </Text>
-        <Text style={styles.flashSalePrice}>{formatCurrency(item.price)}</Text>
-        {item.timeLeft && (
-          <View style={styles.timeLeftContainer}>
-            <Clock size={12} color="#d4183d" />
-            <Text style={styles.timeLeftText}>{item.timeLeft} left</Text>
+          <View style={styles.flashSaleImageContainer}>
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.flashSaleImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View
+                style={[
+                  styles.flashSaleImage,
+                  { backgroundColor: isDark ? "#262626" : "#f5f5f5" },
+                ]}
+              />
+            )}
           </View>
-        )}
-      </TouchableOpacity>
+          <Text
+            style={[
+              styles.flashSaleName,
+              { color: isDark ? "#fafafa" : "#030213" },
+            ]}
+            numberOfLines={1}
+          >
+            {item.name}
+          </Text>
+          <Text style={styles.flashSalePrice}>
+            {formatCurrency(item.price)}
+          </Text>
+          {item.timeLeft && (
+            <View style={styles.timeLeftContainer}>
+              <Clock size={12} color="#d4183d" />
+              <Text style={styles.timeLeftText}>{item.timeLeft} left</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      ),
+      [isDark, onProductPress],
     );
 
     if (loading) {
       return (
         <View style={styles.container}>
-          <Text style={{ color: isDark ? "#fafafa" : "#030213" }}>
-            Loading...
-          </Text>
+          <ActivityIndicator size="large" color="#9333ea" />
         </View>
       );
     }
@@ -102,6 +106,9 @@ const FlashSaleScreen: React.FC<FlashSaleScreenProps> = React.memo(
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          removeClippedSubviews
           ListEmptyComponent={
             <Text style={{ color: isDark ? "#737373" : "#a3a3a3" }}>
               No flash sale products available
