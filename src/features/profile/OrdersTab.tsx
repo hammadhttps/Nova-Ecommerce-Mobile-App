@@ -79,7 +79,8 @@ interface OrdersTabProps {
 }
 
 export default React.memo(function OrdersTab({ onPress }: OrdersTabProps) {
-  const { isDark } = useTheme();
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark";
 
   const renderItem = useCallback(
     ({ item }: { item: Order }) => {
