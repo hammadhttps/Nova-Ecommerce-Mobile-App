@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated } from 'react-native';
 import { SafeScreen } from '@/components/layout/SafeScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ONBOARDING_COMPLETED_KEY } from '@/utils/constants';
+import { useAuthStore } from '@/store/auth.store';
 
 interface SplashScreenProps {
   navigation: any;
@@ -29,11 +30,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
 
     const timer = setTimeout(async () => {
       const onboardingCompleted = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
-      if (onboardingCompleted === 'true') {
-        navigation.replace('Main');
-      } else {
+      if (onboardingCompleted !== 'true') {
         navigation.navigate('Onboarding');
+        return;
       }
+      const isAuthenticated = useAuthStore.getState().isAuthenticated;
+      navigation.replace(isAuthenticated ? 'Main' : 'Login');
     }, 2500);
 
     return () => clearTimeout(timer);

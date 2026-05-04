@@ -1,41 +1,73 @@
-import { WishlistItem, Product } from '@/types';
-import { initialWishlistItems } from '@/services/mocks/wishlist';
-import { delay } from '@/utils/delay';
-
-let wishlistState: WishlistItem[] = [...initialWishlistItems];
+import { WishlistItem, Product } from "@/types";
+import { db } from "../../Firebaseconfig";
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  query,
+  where,
+} from "firebase/firestore";
 
 export const wishlistService = {
-  async getWishlistItems(): Promise<WishlistItem[]> {
-    await delay(300);
-    return wishlistState;
+  async getWishlistItems(userId: string): Promise<WishlistItem[]> {
+    const q = query(collection(db, "users", userId, "wishlists"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id }) as WishlistItem,
+    );
   },
 
-  async addToWishlist(product: Product): Promise<WishlistItem[]> {
-    await delay(200);
+  async addToWishlist(
+    userId: string,
+    product: Product,
+  ): Promise<WishlistItem[]> {
+    const q = query(
+      collection(db, "users", userId, "wishlists"),
+      where("id", "==", product.id),
+    );
+    const existing = await getDocs(q);
 
-    const exists = wishlistState.find((item) => item.id === product.id);
-    if (!exists) {
-      wishlistState.push({
+    if (existing.empty) {
+      await setDoc(doc(db, "users", userId, "wishlists", product.id), {
         ...product,
         inStock: product.inStock ?? true,
       });
     }
-    return wishlistState;
+
+    return this.getWishlistItems(userId);
   },
 
-  async removeFromWishlist(productId: number): Promise<WishlistItem[]> {
-    await delay(200);
-    wishlistState = wishlistState.filter((item) => item.id !== productId);
-    return wishlistState;
+  async removeFromWishlist(
+    userId: string,
+    productId: string,
+  ): Promise<WishlistItem[]> {
+    const q = query(
+      collection(db, "users", userId, "wishlists"),
+      where("id", "==", productId),
+    );
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      await deleteDoc(snapshot.docs[0].ref);
+    }
+    return this.getWishlistItems(userId);
   },
 
-  async isInWishlist(productId: number): Promise<boolean> {
-    await delay(100);
-    return wishlistState.some((item) => item.id === productId);
+  async isInWishlist(userId: string, productId: string): Promise<boolean> {
+    const q = query(
+      collection(db, "users", userId, "wishlists"),
+      where("id", "==", productId),
+    );
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
   },
 
-  async clearWishlist(): Promise<void> {
-    await delay(200);
-    wishlistState = [];
+  async clearWishlist(userId: string): Promise<void> {
+    const snapshot = await getDocs(
+      collection(db, "users", userId, "wishlists"),
+    );
+    const deletePromises = snapshot.docs.map((doc) => deleteDoc(doc.ref));
+    await Promise.all(deletePromises);
   },
 };

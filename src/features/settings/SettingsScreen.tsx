@@ -7,6 +7,7 @@ import {
   ScrollView,
   Switch,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeScreen } from "@/components/layout/SafeScreen";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -24,7 +25,9 @@ import { RootStackParamList } from "@/navigation/types";
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
 
 export default function SettingsScreen({ navigation }: Props) {
-  const { isDark, toggleTheme } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [pushNotifications, setPushNotifications] = useState(true);
 
   return (
@@ -32,7 +35,10 @@ export default function SettingsScreen({ navigation }: Props) {
       <View
         style={[
           styles.container,
-          { backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5" },
+          {
+            backgroundColor: isDark ? "#0f0f0f" : "#f5f5f5",
+            paddingBottom: Math.max(20, insets.bottom),
+          },
         ]}
       >
         <View style={styles.header}>
@@ -234,7 +240,7 @@ export default function SettingsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingBottom: 20 },
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
