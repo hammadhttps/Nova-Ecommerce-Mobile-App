@@ -115,7 +115,14 @@ export const Button: React.FC<ButtonProps> = ({
           {displayText}
         </Text>
       ) : (
-        displayText
+        <Text
+          style={[
+            { color: textColor, fontWeight: "500" },
+            sizeStyles[size].text,
+          ]}
+        >
+          {displayText}
+        </Text>
       )}
     </TouchableOpacity>
   );
