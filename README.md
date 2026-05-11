@@ -126,6 +126,19 @@ src/
 └── App.tsx                   # Entry point
 ```
 
+
+https://github.com/user-attachments/assets/2c5daa9e-100d-4697-aed9-3a7e9089b5eb
+
+
+
+
+https://github.com/user-attachments/assets/52a259a1-655d-4a13-998f-220adbea89b2
+
+
+
+
+
+
 ## Getting Started
 
 ### Prerequisites
